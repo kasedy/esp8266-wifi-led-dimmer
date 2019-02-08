@@ -17,6 +17,9 @@ Resistors 0805: 10kOh<br/>
 Pin Header 2x4 Pin 2.54mm<br/>
 Terminals: KF350-2P and KF350-3P<br/>
 
+# Panelized PCB
 
+![](./top.jpg)
+![](./bottom.jpg)
 
 
