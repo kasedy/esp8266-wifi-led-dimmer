@@ -1,0 +1,24 @@
+#pragma once
+
+#include "helpers.h"
+#include "hardware.h"
+
+#define MQTT_SERVER "raspberrypi.local"
+#define MQTT_PORT 1883
+
+#define CONFIG_MQTT_PAYLOAD_ON "ON"
+#define CONFIG_MQTT_PAYLOAD_OFF "OFF"
+
+#ifdef BOARD_ID
+  #define HOSTNAME DEVICE_TYPE "_" STRINGIZE(BOARD_ID)
+  #define LED_CONFIG_MQTT_TOPIC_COMMAND "homeassistant/light/" STRINGIZE(BOARD_ID) "/" DEVICE_TYPE
+  #define DEVICE_FULL_NAME DEVICE_NAME " " STRINGIZE(BOARD_ID)
+#else
+  #define HOSTNAME DEVICE_TYPE
+  #define LED_CONFIG_MQTT_TOPIC_COMMAND "homeassistant/light/" DEVICE_TYPE
+  #define DEVICE_FULL_NAME DEVICE_NAME
+#endif
+
+#define LED_CONFIG_MQTT_TOPIC_CONFIG LED_CONFIG_MQTT_TOPIC_COMMAND "/config"
+#define LED_CONFIG_MQTT_TOPIC_STATE LED_CONFIG_MQTT_TOPIC_COMMAND "/state"
+
