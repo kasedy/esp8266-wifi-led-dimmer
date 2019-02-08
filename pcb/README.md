@@ -3,9 +3,11 @@
 `Light SOT32` pcb uses SOT32 MOSFET's mounted under voltage regultaro
 `Light SOT32 bottom` pcb uses SOT32 MOSFET's mounted on the other side of the board
 `Light TO-220` pcb uses TO220 MOSFET's for long led strips that requere more power
-`Panelized` contains all 3 kind of boards multiplied 4 times. Archive contains all necessary files for manufacterer. Board size does not exceed 100X100mm. It is the smalles and cheappes size.
+`Panelized` contains all 3 kind of boards multiplied 4 times. Archive contains all necessary files for manufacterer. Board size does not exceed 100X100mm. It is the smalles and cheappes size. I ordered [here](https://jlcpcb.com/) for $2. 
 
-# Recomended part list (www.aliexpress.com)
+# Recomended part list
+
+Everything could be found at [www.aliexpress.com](http://www.aliexpress.com)
 
 ESP8266: ESP-01
 SOT32 MOSFET: ao3400
