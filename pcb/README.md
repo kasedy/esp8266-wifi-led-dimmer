@@ -10,6 +10,7 @@
 Everything could be found at [www.aliexpress.com](http://www.aliexpress.com)<br/>
 
 ESP8266: ESP-01<br/>
+LED string or LED strip<br/>
 SOT32 MOSFET: ao3400<br/>
 TO220 MOSFET: P55NF06L<br/>
 Voltage regulator: Mini 360<br/>
