@@ -1,11 +1,14 @@
 # PCB
 
+<div style="flaot: right;">
 <img src="assembled_1.jpg" width=150 align="right">
 <img src="assembled_2.jpg" width=150 align="right">
+</div>
 
 
 Controller has extra small size (22x26x14mm) and low cost (under $2).<br/>
-<div style="clear: both;"></div>
+<p style="clear: both;"></p>
+
 
 # Eagle project for pcb manufactering
 
