@@ -1,26 +1,27 @@
-# Eagle project for manufactering pcb
+# Eagle project for pcb manufactering
 
 `Light SOT32` pcb uses SOT32 MOSFET's mounted under voltage regultar<br/>
 `Light SOT32 bottom` pcb uses SOT32 MOSFET's mounted on the other side of the board<br/>
 `Light TO-220` pcb uses TO220 MOSFET's for long led strips that requere high power<br/>
-`Panelized` contains all 3 kind of boards replicated 4 times. Archive contains all necessary files for a manufacterer. Board size does not exceed 100X100mm. It is the smalles and cheappes size. I ordered [here](https://jlcpcb.com/) for $2.<br/>
+`Panelized` contains all 3 kind of boards replicated 4 times. Archive contains all necessary files for a manufacterer. Board size does not exceed 100X100mm. It is the smalles and cheappes size. Could be ordered from [jlcpcb.com](https://jlcpcb.com/) for $2.<br/>
 
-# Recomended part list
+`Light SOT32` and `Light SOT32 bottom` are low power versions of the board. It can handle up to 2A per chanel. When `Light TO-220` is a high power board with up to 15A per channel.
 
-Everything could be found at [www.aliexpress.com](http://www.aliexpress.com)<br/>
+# Part list requered for one module
 
-ESP8266: ESP-01<br/>
-LED string or LED strip<br/>
-SOT32 MOSFET: ao3400<br/>
-TO220 MOSFET: P55NF06L<br/>
-Voltage regulator: Mini 360<br/>
-Resistors 0805: 10kOh<br/>
-Pin Header 2x4 Pin 2.54mm<br/>
-Terminals: KF350-2P and KF350-3P<br/>
+| Part | Amount |
+| --- | :---: |
+| Microcontroller Esp8266-01 | 1 |
+| MOSFET ao3400 (for low power board version) | 4 |
+| MOSFET P55NF06L (for high power board version) | 4 |
+| Buck converter Mini 360 | 1 |
+| Resistor 0805 10kOh | 2 |
+| Pin Header 2x4 Pin 2.54mm | 1 |
+| Terminal KF350-2P and KF350-3P | 2 |
+| Terminal KF350-3P | 1 | 
+| Male songle row pin 2.54 | 4 |
 
 # Panelized PCB
 
-![](./top.jpg)
-![](./bottom.jpg)
-
-
+<img src="top.jpg" width=400 align="left">
+<img src="bottom.jpg" width=400 align="left">
