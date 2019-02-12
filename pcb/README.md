@@ -1,9 +1,11 @@
 # Eagle project for pcb manufactering
 
-`Light SOT32` pcb uses SOT32 MOSFET's mounted under voltage regultar<br/>
-`Light SOT32 bottom` pcb uses SOT32 MOSFET's mounted on the other side of the board<br/>
-`Light TO-220` pcb uses TO220 MOSFET's for long led strips that requere high power<br/>
-`Panelized` contains all 3 kind of boards replicated 4 times. Archive contains all necessary files for a manufacterer. Board size does not exceed 100X100mm. It is the smalles and cheappes size. Could be ordered from [jlcpcb.com](https://jlcpcb.com/) for $2.<br/>
+| Design | Description |
+| :---: | --- |
+| *Light&#160;SOT32* | Uses SOT32 MOSFET's mounted under voltage regultar. |
+| *Light&#160;SOT32&#160;bottom* | Uses SOT32 MOSFET's mounted on the other side of the board. |
+| *Light&#160;TO-220* | Uses TO220 MOSFET's for long led strips that requere high power. |
+| *Panelized* | Contains all 3 kind of boards replicated 4 times. Archive contains all necessary files for a manufacterer. Board size does not exceed 100X100mm. It is the smalles and cheappes size. Could be ordered from [jlcpcb.com](https://jlcpcb.com/) for $2. |
 
 `Light SOT32` and `Light SOT32 bottom` are low power versions of the board. It can handle up to 2A per chanel. When `Light TO-220` is a high power board with up to 15A per channel.
 
