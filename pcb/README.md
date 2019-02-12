@@ -1,3 +1,13 @@
+# PCB
+
+<div>
+<img src="assembled_1.jpg" width=150 align="right">
+<img src="assembled_2.jpg" width=150 align="right">
+
+
+Controller has extra small size (22x26x14mm) and low cost (under $2).<br/>
+</div>
+
 # Eagle project for pcb manufactering
 
 | Design | Description |
@@ -27,3 +37,7 @@
 
 <img src="top.jpg" width=400 align="left">
 <img src="bottom.jpg" width=400 align="left">
+
+# Wire schema
+
+<img src="schema.jpg">
