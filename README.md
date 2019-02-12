@@ -1,4 +1,4 @@
-# WiFi controlled LED lamp
+# WiFi controlled LED switch / dimmer
 
 Based on ESP8266 microcontroller<br/>
 The firmware for WiFi controlled LED lamp<br/>
