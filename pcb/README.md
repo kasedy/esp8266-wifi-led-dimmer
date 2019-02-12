@@ -3,8 +3,8 @@
 <img src="assembled_1.jpg" width=150 align="right">
 <img src="assembled_2.jpg" width=150 align="right">
 
-Controller has extra small size (22x26x14mm) and low cost (under $2).
-<div style="clear: both;"><br/><br/></div>
+Controller is designed to have extra small size (22x26x14mm) and cost under $2 per item. Four independent channels allows to create lamps with different blink effects or control RGB led strip.
+<div style="clear: both;"><br/><br/><br/></div>
 
 
 # Eagle project for pcb manufactering
@@ -35,9 +35,8 @@ Controller has extra small size (22x26x14mm) and low cost (under $2).
 # Panelized PCB
 
 <img src="top.jpg" width=400 align="left">
-<img src="bottom.jpg" width=400 align="left">
-<div style="clear: both;"></div>
+<img src="bottom.jpg" width=400>
 
-# Wire schema
+# Wiring schema
 
 <img src="schema.png">
