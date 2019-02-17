@@ -27,10 +27,10 @@ Controller is designed to have extra small size (22x26x14mm) and cost under $2 p
 | MOSFET P55NF06L (for high power board version) | 4 |
 | Buck converter Mini 360 | 1 |
 | Resistor 0805 10kOh | 2 |
-| Pin Header 2x4 Pin 2.54mm | 1 |
+| Pin Header 2x4 2.54mm | 1 |
 | Terminal KF350-2P and KF350-3P | 2 |
 | Terminal KF350-3P | 1 | 
-| Male single row pin 2.54 | 4 |
+| Male single row pin 2.54mm | 4 |
 
 # Panelized PCB
 
