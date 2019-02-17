@@ -30,7 +30,7 @@ Controller is designed to have extra small size (22x26x14mm) and cost under $2 p
 | Pin Header 2x4 Pin 2.54mm | 1 |
 | Terminal KF350-2P and KF350-3P | 2 |
 | Terminal KF350-3P | 1 | 
-| Male songle row pin 2.54 | 4 |
+| Male single row pin 2.54 | 4 |
 
 # Panelized PCB
 
