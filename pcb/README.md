@@ -6,6 +6,11 @@
 The controller is designed to have extra small size (22x26x14mm), and costs under $2 per item. Four independent channels allow to create lamps with different blink effects or control RGB led strip.
 <div style="clear: both;"><br/><br/><br/></div>
 
+# Assembling instructions
+
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=8LverFZVN8w" target="_blank">
+  <img src="http://img.youtube.com/vi/8LverFZVN8w/0.jpg" alt="Assembling LED dimming switch controller" width="900"/>
+</a>
 
 # Eagle project for pcb manufactering
 
