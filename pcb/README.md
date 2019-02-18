@@ -26,7 +26,7 @@ The controller is designed to have extra small size (22x26x14mm), and costs unde
 | MOSFET ao3400 (for low power board version) | 4 |
 | MOSFET P55NF06L (for high power board version) | 4 |
 | Buck converter Mini 360 | 1 |
-| Resistor 0805 10kOh | 2 |
+| SMD resistor 0805 10kOh | 2 |
 | Pin Header 2x4 2.54mm | 1 |
 | Terminal KF350-2P and KF350-3P | 2 |
 | Terminal KF350-3P | 1 | 
