@@ -8,8 +8,6 @@ The controller is designed to have extra small size (22x26x14mm), and costs unde
 
 # Assembling instructions
 
-<iframe width="560" height="315" src="https://www.youtube.com/embed/8LverFZVN8w" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
-
 <a href="http://www.youtube.com/watch?feature=player_embedded&v=8LverFZVN8w" target="_blank">
   <img src="http://img.youtube.com/vi/8LverFZVN8w/0.jpg" alt="Assembling LED dimming switch controller" width="900"/>
 </a>
