@@ -3,7 +3,7 @@
 <img src="assembled_1.jpg" width=150 align="right">
 <img src="assembled_2.jpg" width=150 align="right">
 
-Controller is designed to have extra small size (22x26x14mm) and cost under $2 per item. Four independent channels allows to create lamps with different blink effects or control RGB led strip.
+The controller is designed to have extra small size (22x26x14mm), and costs under $2 per item. Four independent channels allow to create lamps with different blink effects or control RGB led strip.
 <div style="clear: both;"><br/><br/><br/></div>
 
 
@@ -18,7 +18,7 @@ Controller is designed to have extra small size (22x26x14mm) and cost under $2 p
 
 `Light SOT32` and `Light SOT32 bottom` are low power versions of the board. It can handle up to 2A per chanel. When `Light TO-220` is a high power board with up to 15A per channel.
 
-# Part list requered for one module
+# Parts required for one module
 
 | Part | Amount |
 | --- | :---: |
