@@ -117,7 +117,7 @@ void mqttDiscovery() {
 void reconnectMqtt() {
   if (!mqttClient.connected()) {
     DBG("Attempting MQTT connection...\n");
-    if (mqttClient.connect(HOSTNAME, LED_CONFIG_MQTT_TOPIC_CONFIG, 2, true, "")) {
+    if (mqttClient.connect(HOSTNAME)) {
       DBG("MQTT connected. Subscribing %s\n", LED_CONFIG_MQTT_TOPIC_COMMAND);
       mqttClient.subscribe(LED_CONFIG_MQTT_TOPIC_COMMAND, 1);
       mqttDiscovery();
