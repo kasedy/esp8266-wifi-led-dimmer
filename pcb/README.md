@@ -3,9 +3,14 @@
 <img src="assembled_1.jpg" width=150 align="right">
 <img src="assembled_2.jpg" width=150 align="right">
 
-Controller is designed to have extra small size (22x26x14mm) and cost under $2 per item. Four independent channels allows to create lamps with different blink effects or control RGB led strip.
+The controller is designed to have extra small size (22x26x14mm), and costs under $2 per item. Four independent channels allow to create lamps with different blink effects or control RGB led strip.
 <div style="clear: both;"><br/><br/><br/></div>
 
+# Assembling instructions
+
+<a href="http://www.youtube.com/watch?feature=player_embedded&v=8LverFZVN8w" target="_blank">
+  <img src="http://img.youtube.com/vi/8LverFZVN8w/0.jpg" alt="Assembling LED dimming switch controller" width="900"/>
+</a>
 
 # Eagle project for pcb manufactering
 
@@ -18,7 +23,7 @@ Controller is designed to have extra small size (22x26x14mm) and cost under $2 p
 
 `Light SOT32` and `Light SOT32 bottom` are low power versions of the board. It can handle up to 2A per chanel. When `Light TO-220` is a high power board with up to 15A per channel.
 
-# Part list requered for one module
+# Parts required for one module
 
 | Part | Amount |
 | --- | :---: |
@@ -26,11 +31,11 @@ Controller is designed to have extra small size (22x26x14mm) and cost under $2 p
 | MOSFET ao3400 (for low power board version) | 4 |
 | MOSFET P55NF06L (for high power board version) | 4 |
 | Buck converter Mini 360 | 1 |
-| Resistor 0805 10kOh | 2 |
-| Pin Header 2x4 Pin 2.54mm | 1 |
+| SMD resistor 0805 10kOh | 2 |
+| Pin Header 2x4 2.54mm | 1 |
 | Terminal KF350-2P and KF350-3P | 2 |
 | Terminal KF350-3P | 1 | 
-| Male songle row pin 2.54 | 4 |
+| Male single row pin 2.54mm | 4 |
 
 # Panelized PCB
 
