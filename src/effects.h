@@ -3,6 +3,10 @@
 #include <vector>
 #include <animations/all.h>
 
+Effect noAnimation() {
+  return NoAnimation::effect("No animation");
+}
+
 Effect effectFadeOnSwitch() {
   return FadeSwitch::effect("Fade on switch");
 }
@@ -29,6 +33,7 @@ Effect effectRandomBlinks() {
 
 std::vector<Effect> defaultEffects() {
   return std::vector<Effect>({
+    noAnimation(), 
     effectFadeOnSwitch(),
     effectFadeInCycle(),
     effectFadeSingleLed(),

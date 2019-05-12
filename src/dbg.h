@@ -2,6 +2,8 @@
 
 #include <HardwareSerial.h>
 
+#include "hardware.h"
+
 #ifndef LOGGING
 #define LOGGING false
 #endif

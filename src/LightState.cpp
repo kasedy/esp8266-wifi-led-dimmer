@@ -76,21 +76,39 @@ void LightState::setStateOn(bool newStateOn) {
 }
 
 void LightState::setEffect(const char* effectName) {
-    if (currentEffectName && strcmp(effectName, currentEffectName) == 0) {
+  if (currentEffectName && strcmp(effectName, currentEffectName) == 0) {
+    return;
+  }
+  for (size_t i = 0; i < effects.size(); ++i) {
+    const Effect &effectInfo = effects[i];
+    if (strcmp(effectInfo.name, effectName) == 0) {
+      setupAnimation(effectInfo);
       return;
     }
-    for (size_t i = 0; i < effects.size(); ++i) {
-        const Effect &effectInfo = effects[i];
-        if (strcmp(effectInfo.name, effectName) == 0) {
-            if (currentEffect) {
-                delete currentEffect;
-            }
-            currentEffect = effectInfo.animationBuilder(this);
-            currentEffectName = effectInfo.name;
-            effectChanged = true;
-            return;
-        }
+  }
+}
+
+bool LightState::nextAnimation() {
+  for (size_t animationIndex = 0; animationIndex < effects.size(); ++animationIndex) {
+    const Effect &effectInfo = effects[animationIndex];
+    if (strcmp(effectInfo.name, currentEffectName) == 0) {
+      if (++animationIndex >= effects.size()) {
+        animationIndex = 0;
+      }
+      setupAnimation(effects[animationIndex]);
+      return true;
     }
+  }
+  return false;
+}
+
+void LightState::setupAnimation(const Effect &effectInfo) {
+  if (currentEffect) {
+    delete currentEffect;
+  }
+  currentEffect = effectInfo.animationBuilder(this);
+  currentEffectName = effectInfo.name;
+  effectChanged = true;
 }
 
 void LightState::handle() {

@@ -39,7 +39,11 @@ public:
   void setMaxBrightness(uint8_t newMaxBrightness);
   void setAnimationSpeed(uint8_t newAnimationSpeed);
   void setStateOn(bool newStateOn);
+  void toggleState() {
+    setStateOn(!isOn());
+  }
   void setEffect(const char* effectName);
+  bool nextAnimation();
   void handle();
   void setup();
   uint8_t getLedBrightness(uint8_t pinIndex) const;
@@ -53,4 +57,7 @@ public:
   bool isStateOnChanged() const;
   bool isEffectChanged() const;
   bool isAnimationSpeedChanged() const;
+
+private:
+  void setupAnimation(const Effect &effectInfo);
 };

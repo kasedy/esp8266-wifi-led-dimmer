@@ -5,7 +5,6 @@
 #include <Tasker.h>
 #include <ArduinoJson.h>
 #include <ResetDetector.h>
-#include <CapacitiveSensor.h>
 
 #include "config.h"
 #include "LightState.h"
@@ -13,6 +12,7 @@
 #include "effects.h"
 #include "LedDriver.h"
 #include "average.h"
+#include "CapacitiveSensorButton.h"
 
 WiFiClient wifiClient;
 PubSubClient mqttClient(MQTT_SERVER, MQTT_PORT, wifiClient);
@@ -25,7 +25,7 @@ LightState lightState(LED_PINS, defaultEffects());
 LedDriver ledBuildIn(-1);
 LedDriver ledOne(-1);
 LedDriver ledTwo(-1);
-CapacitiveSensor cs = CapacitiveSensor(5, 4);
+CapacitiveSensorButton sensorButton(5, 4);
 
 void setupWifi(bool resetPassword) 
 {
@@ -145,10 +145,14 @@ bool processJson(char* message) {
   }
 
   if (doc.containsKey("state")) {
+    const char *state = doc["state"];
+    Serial.printf("State = %s\n", state);
     if (strcmp(doc["state"], CONFIG_MQTT_PAYLOAD_ON) == 0) {
+      Serial.print("Switching ON\n");
       lightState.setStateOn(true);
     }
     else if (strcmp(doc["state"], CONFIG_MQTT_PAYLOAD_OFF) == 0) {
+      Serial.print("Switching OFF\n");
       lightState.setStateOn(false);
     }
   }
@@ -168,7 +172,7 @@ bool processJson(char* message) {
   return true;
 }
 
-void sendState() {
+void broadcastStateViaMqtt() {
   StaticJsonDocument<BUFFER_SIZE> doc;
 
   doc["state"] = lightState.isOn() ? CONFIG_MQTT_PAYLOAD_ON : CONFIG_MQTT_PAYLOAD_OFF;
@@ -198,7 +202,33 @@ void mqttCallback(char* topic, byte* payload, unsigned int length) {
     return;
   }
 
-  sendState();
+  broadcastStateViaMqtt();
+}
+
+void onSensorButtonClick() {
+  lightState.toggleState();
+  broadcastStateViaMqtt();
+}
+
+void onSensorButtonDoubleClick() {
+  if (lightState.nextAnimation()) {
+    broadcastStateViaMqtt();
+  }
+}
+
+bool directionUp = false;
+void onLongPressHandler(uint16_t longPressCounter) {
+  if (longPressCounter == 0) {
+    directionUp = !directionUp;
+  }
+  uint8_t brightness = lightState.getMaxBrightness();
+  if (brightness >= 254) {
+    directionUp = false;
+  } else if (brightness <= 1) {
+    directionUp = true;
+  }
+  lightState.setMaxBrightness(brightness + (directionUp ? 2 : -2));
+  broadcastStateViaMqtt();
 }
 
 void setup() { 
@@ -223,51 +253,10 @@ void setup() {
   ledBuildIn.setPattern({500, 1000}, LOW);
   ledOne.blink(300);
   ledTwo.blink(600);
-  cs.set_CS_AutocaL_Millis(0xFFFFFFFF);
-}
 
-unsigned long lastPrint = 0;
-long maxValue = 0;
-long minValue = 0;
-AverageValueCalculator<uint32_t, uint32_t> touchSensorData;
-
-void processSensorButton() {
-  long start = millis();
-  long total = cs.capacitiveSensor(30);
-  touchSensorData.addMeasurement(total);
-  if (touchSensorData.counter >= 50) {
-    Serial.print(touchSensorData.minValue);
-    Serial.print("\t");
-    Serial.print(touchSensorData.getAverage());
-    Serial.print("\t");
-    Serial.print(touchSensorData.maxValue);
-    Serial.println();
-    touchSensorData.reset();
-  }
-
-  minValue = min(minValue, total);
-  maxValue = max(maxValue, total);
-  unsigned long now = millis();
-  if (now - lastPrint > 200) {
-    lightState.setStateOn(!lightState.isOn());
-      Serial.print(millis() - start);        // check on performance in milliseconds
-      Serial.print("\t");                    // tab character for debug window spacing
-      Serial.print(minValue);                  // print sensor output 1
-      Serial.print("\t");
-      Serial.print(total);                  // print sensor output 1
-      Serial.print("\t");
-      Serial.println(maxValue);                  // print sensor output 1
-      minValue = maxValue = total;
-      lastPrint = now;
-  }
-
-  if (total < 100) {
-    ledTwo.setLow();
-  } else if (total > 400) {
-    ledTwo.setHigh();
-  } else {
-    ledTwo.blink(100);    
-  }
+  sensorButton.setOnClickHandler(onSensorButtonClick);
+  sensorButton.setOnDoubleClickHandler(onSensorButtonDoubleClick);
+  sensorButton.setOnLongPressHandler(onLongPressHandler);
 }
 
 void loop() {
@@ -281,5 +270,5 @@ void loop() {
   ledBuildIn.loop();
   ledOne.loop();
   ledTwo.loop();
-  processSensorButton();
+  sensorButton.loop();
 }

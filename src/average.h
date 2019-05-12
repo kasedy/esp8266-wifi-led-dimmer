@@ -27,6 +27,10 @@ struct AverageValueCalculator {
     return maxValue - minValue;
   }
 
+  uint16_t getCounter() {
+    return counter;
+  }
+
   void reset() {
     accumulator = 0;
     counter = 0;
