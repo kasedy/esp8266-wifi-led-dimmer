@@ -4,10 +4,14 @@
   #define DEVICE_TYPE "cointreau_bottle"
   #define DEVICE_NAME "Cointreau Bottle"
   #define LED_PINS {0, 1, 2, 3}
+#elif defined(HARDWARE_COINTREAU_BOTTLE_2)
+  #define DEVICE_TYPE "cointreau_bottle_2"
+  #define DEVICE_NAME "Cointreau Bottle 2"
+  #define LED_PINS {0, 1, 2, 3}
 #elif defined(HARDWARE_TEST)
   #define DEVICE_TYPE "test"
   #define DEVICE_NAME "Testing and Development"
-  #define LED_PINS {0, 2, 4, 5}
+  #define LED_PINS {12, 13, 14, 16}
 #elif defined(HARDWARE_KITCHEN_LIGHT)
   #define DEVICE_TYPE "kitchen_light"
   #define DEVICE_NAME "Kitchen Light"

@@ -7,6 +7,9 @@ LedDriver::LedDriver(uint8_t pin) : pin(pin), initialState(LOW) {
 }
 
 void LedDriver::setPattern(std::vector<uint32_t> newPattern, bool newInitialState) {
+  if (patternMs == newPattern) {
+    return;
+  }
   patternMs = newPattern;
   initialState = newInitialState;
   init();

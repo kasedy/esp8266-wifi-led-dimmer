@@ -5,11 +5,14 @@
 #include <Tasker.h>
 #include <ArduinoJson.h>
 #include <ResetDetector.h>
+#include <CapacitiveSensor.h>
 
 #include "config.h"
 #include "LightState.h"
 #include "helpers.h"
 #include "effects.h"
+#include "LedDriver.h"
+#include "average.h"
 
 WiFiClient wifiClient;
 PubSubClient mqttClient(MQTT_SERVER, MQTT_PORT, wifiClient);
@@ -19,11 +22,13 @@ bool OTAStarted = false;
 const int BUFFER_SIZE = JSON_OBJECT_SIZE(20);
 
 LightState lightState(LED_PINS, defaultEffects());
+LedDriver ledBuildIn(-1);
+LedDriver ledOne(-1);
+LedDriver ledTwo(-1);
+CapacitiveSensor cs = CapacitiveSensor(5, 4);
 
 void setupWifi(bool resetPassword) 
 {
-  pinMode(LED_BUILTIN, OUTPUT);
-  analogWrite(LED_BUILTIN, 512);
   if (resetPassword) {
     DBG("Resetting WiFi password!\n");
     WiFi.disconnect();
@@ -83,30 +88,29 @@ void mqttDiscovery() {
     return;
   }
 
-  DynamicJsonBuffer jsonBuffer;
-  JsonObject& config = jsonBuffer.createObject();
-  config["schema"] = "json";
-  config["unique_id"] = HOSTNAME;
-  config["name"] = DEVICE_FULL_NAME;
-  config["state_topic"] = LED_CONFIG_MQTT_TOPIC_STATE;
-  config["command_topic"] = LED_CONFIG_MQTT_TOPIC_COMMAND;
-  config["brightness"] = true;
-  config["optimistic"] = false;
-  config["qos"] = 2;
-  config["retain"] = true;
-  config["effect"] = lightState.getAvailableAnimationCount() > 0;
-  config["white_value"] = true;
+  DynamicJsonDocument doc(1024);
+  doc["schema"] = "json";
+  doc["unique_id"] = HOSTNAME;
+  doc["name"] = DEVICE_FULL_NAME;
+  doc["state_topic"] = LED_CONFIG_MQTT_TOPIC_STATE;
+  doc["command_topic"] = LED_CONFIG_MQTT_TOPIC_COMMAND;
+  doc["brightness"] = true;
+  doc["optimistic"] = false;
+  doc["qos"] = 2;
+  doc["retain"] = true;
+  doc["effect"] = lightState.getAvailableAnimationCount() > 0;
+  doc["white_value"] = true;
 
   if (lightState.getAvailableAnimationCount() > 0) {
-    JsonArray& effectList = config.createNestedArray("effect_list");
+    JsonArray effectList = doc.createNestedArray("effect_list");
     for (size_t i = 0; i < lightState.getAvailableAnimationCount(); ++i) {
       effectList.add(lightState.getAnimationName(i));
     }
   }
   
   String output;
-  config.printTo(output);
-  jsonBuffer.clear();
+  serializeJson(doc, output);
+  doc.clear();
 
   DBG("Sending discovery config: %s\n", output.c_str());
   if (!mqttClient.publish(LED_CONFIG_MQTT_TOPIC_CONFIG, output.c_str(), true)) {
@@ -132,52 +136,50 @@ int convertBrigtnessToOwmDutyCycle(int brightness) {
 }
 
 bool processJson(char* message) {
-  StaticJsonBuffer<BUFFER_SIZE> jsonBuffer;
+  StaticJsonDocument<BUFFER_SIZE> doc;
+  DeserializationError error = deserializeJson(doc, message);
 
-  JsonObject& root = jsonBuffer.parseObject(message);
-
-  if (!root.success()) {
+  if (error) {
     DBG("parseObject() failed\n");
     return false;
   }
 
-  if (root.containsKey("state")) {
-    if (strcmp(root["state"], CONFIG_MQTT_PAYLOAD_ON) == 0) {
+  if (doc.containsKey("state")) {
+    if (strcmp(doc["state"], CONFIG_MQTT_PAYLOAD_ON) == 0) {
       lightState.setStateOn(true);
     }
-    else if (strcmp(root["state"], CONFIG_MQTT_PAYLOAD_OFF) == 0) {
+    else if (strcmp(doc["state"], CONFIG_MQTT_PAYLOAD_OFF) == 0) {
       lightState.setStateOn(false);
     }
   }
 
-  if (root.containsKey("brightness")) {
-    lightState.setMaxBrightness(root["brightness"]);
+  if (doc.containsKey("brightness")) {
+    lightState.setMaxBrightness(doc["brightness"]);
   }
 
-  if (root.containsKey("effect")) {
-    lightState.setEffect(root["effect"]);
+  if (doc.containsKey("effect")) {
+    lightState.setEffect(doc["effect"]);
   }
 
-  if (root.containsKey("white_value")) {
-    lightState.setAnimationSpeed(root["white_value"]);
+  if (doc.containsKey("white_value")) {
+    lightState.setAnimationSpeed(doc["white_value"]);
   }
 
   return true;
 }
 
 void sendState() {
-  StaticJsonBuffer<BUFFER_SIZE> jsonBuffer;
-  JsonObject& root = jsonBuffer.createObject();
+  StaticJsonDocument<BUFFER_SIZE> doc;
 
-  root["state"] = lightState.isOn() ? CONFIG_MQTT_PAYLOAD_ON : CONFIG_MQTT_PAYLOAD_OFF;
-  root["brightness"] = lightState.getMaxBrightness();
+  doc["state"] = lightState.isOn() ? CONFIG_MQTT_PAYLOAD_ON : CONFIG_MQTT_PAYLOAD_OFF;
+  doc["brightness"] = lightState.getMaxBrightness();
   if (lightState.hasCurrentEffect()) {
-    root["effect"] = lightState.getCurrentEffectName();
+    doc["effect"] = lightState.getCurrentEffectName();
   }
-  root["white_value"] = lightState.getAnimationSpeed();
+  doc["white_value"] = lightState.getAnimationSpeed();
 
-  char buffer[root.measureLength() + 1];
-  root.printTo(buffer, sizeof(buffer));
+  char buffer[measureJson(doc) + 1];
+  serializeJson(doc, buffer, sizeof(buffer));
 
   const char* topic = LED_CONFIG_MQTT_TOPIC_STATE;
   DBG("Publishing state to %s -> %s\n", topic, buffer);
@@ -203,7 +205,7 @@ void setup() {
   int resetCount = ResetDetector::execute(2000);
 
 #if LOGGING
-  Serial.begin(74880);
+  Serial.begin(74880, SERIAL_8N1, SERIAL_TX_ONLY);
   Serial.setDebugOutput(true);
 #endif 
 
@@ -218,6 +220,54 @@ void setup() {
   tasker.setInterval(reconnectMqtt, 5000);
 
   randomSeed(ESP.getCycleCount());
+  ledBuildIn.setPattern({500, 1000}, LOW);
+  ledOne.blink(300);
+  ledTwo.blink(600);
+  cs.set_CS_AutocaL_Millis(0xFFFFFFFF);
+}
+
+unsigned long lastPrint = 0;
+long maxValue = 0;
+long minValue = 0;
+AverageValueCalculator<uint32_t, uint32_t> touchSensorData;
+
+void processSensorButton() {
+  long start = millis();
+  long total = cs.capacitiveSensor(30);
+  touchSensorData.addMeasurement(total);
+  if (touchSensorData.counter >= 50) {
+    Serial.print(touchSensorData.minValue);
+    Serial.print("\t");
+    Serial.print(touchSensorData.getAverage());
+    Serial.print("\t");
+    Serial.print(touchSensorData.maxValue);
+    Serial.println();
+    touchSensorData.reset();
+  }
+
+  minValue = min(minValue, total);
+  maxValue = max(maxValue, total);
+  unsigned long now = millis();
+  if (now - lastPrint > 200) {
+    lightState.setStateOn(!lightState.isOn());
+      Serial.print(millis() - start);        // check on performance in milliseconds
+      Serial.print("\t");                    // tab character for debug window spacing
+      Serial.print(minValue);                  // print sensor output 1
+      Serial.print("\t");
+      Serial.print(total);                  // print sensor output 1
+      Serial.print("\t");
+      Serial.println(maxValue);                  // print sensor output 1
+      minValue = maxValue = total;
+      lastPrint = now;
+  }
+
+  if (total < 100) {
+    ledTwo.setLow();
+  } else if (total > 400) {
+    ledTwo.setHigh();
+  } else {
+    ledTwo.blink(100);    
+  }
 }
 
 void loop() {
@@ -228,4 +278,8 @@ void loop() {
   tasker.loop();
   mqttClient.loop();
   lightState.handle();
+  ledBuildIn.loop();
+  ledOne.loop();
+  ledTwo.loop();
+  processSensorButton();
 }
