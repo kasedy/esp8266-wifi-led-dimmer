@@ -5,6 +5,7 @@
 #include <Tasker.h>
 #include <ArduinoJson.h>
 #include <ResetDetector.h>
+#include <WiFiManager.h>
 
 #include "config.h"
 #include "LightState.h"
@@ -18,8 +19,6 @@ WiFiClient wifiClient;
 PubSubClient mqttClient(MQTT_SERVER, MQTT_PORT, wifiClient);
 Tasker tasker;
 bool OTAStarted = false;
-
-const int BUFFER_SIZE = JSON_OBJECT_SIZE(20);
 
 LightState lightState(LED_PINS, defaultEffects());
 LedDriver ledBuildIn(-1);
@@ -136,7 +135,7 @@ int convertBrigtnessToOwmDutyCycle(int brightness) {
 }
 
 bool processJson(char* message) {
-  StaticJsonDocument<BUFFER_SIZE> doc;
+  StaticJsonDocument<JSON_OBJECT_SIZE(20)> doc;
   DeserializationError error = deserializeJson(doc, message);
 
   if (error) {
@@ -173,7 +172,7 @@ bool processJson(char* message) {
 }
 
 void broadcastStateViaMqtt() {
-  StaticJsonDocument<BUFFER_SIZE> doc;
+  StaticJsonDocument<JSON_OBJECT_SIZE(20)> doc;
 
   doc["state"] = lightState.isOn() ? CONFIG_MQTT_PAYLOAD_ON : CONFIG_MQTT_PAYLOAD_OFF;
   doc["brightness"] = lightState.getMaxBrightness();
@@ -231,6 +230,16 @@ void onLongPressHandler(uint16_t longPressCounter) {
   broadcastStateViaMqtt();
 }
 
+void setupSmartWifi(bool resetPassword) {
+  WiFiManagerParameter param();
+  WiFiManager wifiManager;
+  wifiManager.setMinimumSignalQuality(75);
+  if (resetPassword) {
+    wifiManager.resetSettings();
+  }
+  wifiManager.autoConnect(HOSTNAME);
+}
+
 void setup() { 
   int resetCount = ResetDetector::execute(2000);
 
@@ -238,10 +247,9 @@ void setup() {
   Serial.begin(74880, SERIAL_8N1, SERIAL_TX_ONLY);
   Serial.setDebugOutput(true);
 #endif 
-
   DBG("Starting with number of resets = %d\n", resetCount);
   lightState.setup();
-  setupWifi(resetCount >= 3);
+  setupSmartWifi(resetCount >= 3);
   setupOta();
   
   mqttClient.setCallback(mqttCallback);
