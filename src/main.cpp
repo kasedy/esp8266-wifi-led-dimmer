@@ -1,5 +1,4 @@
 #include <ESP8266WiFi.h>
-#include <PubSubClient.h>
 #include <ESP8266mDNS.h>
 #include <ArduinoOTA.h>
 #include <ResetDetector.h>
@@ -16,15 +15,18 @@
 
 LightState lightState(LED_PINS, defaultEffects());
 AbstractCapacitiveSensorButton* sensorButton = AbstractCapacitiveSensorButton::create(&lightState);
+LedDriver blueLed(2);
 
 void setupSmartWifi(bool resetPassword) {
+  blueLed.blink(500);
   WiFiManagerParameter param();
   WiFiManager wifiManager;
-  wifiManager.setMinimumSignalQuality(75);
+  wifiManager.setMinimumSignalQuality(50);
   if (resetPassword) {
     wifiManager.resetSettings();
   }
   wifiManager.autoConnect(HOSTNAME);
+  blueLed.setHigh();
 }
 
 void setup() { 

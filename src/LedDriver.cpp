@@ -2,54 +2,49 @@
 
 #include <Arduino.h>
 
-LedDriver::LedDriver(uint8_t pin) : pin(pin), initialState(LOW) {
-  init();
+LedDriver::LedDriver(uint8_t pin) : pin(pin), initialState(LOW), cycle(true) {
+  if (pin != -1) {
+    pinMode(pin, OUTPUT);
+    init();
+  }
 }
 
-void LedDriver::setPattern(std::vector<uint32_t> newPattern, bool newInitialState) {
-  if (patternMs == newPattern) {
+void LedDriver::setPattern(std::vector<uint32_t> newPattern, bool newInitialState, bool newCycle) {
+  if (patternMs == newPattern || pin == -1) {
     return;
   }
   patternMs = newPattern;
   initialState = newInitialState;
+  cycle = newCycle;
   init();
 }
 
 void LedDriver::init() {
-  if (pin == -1) {
-    return;
-  }
-  pinMode(pin, OUTPUT);
   currentIndex = 0;
   digitalWrite(pin, initialState);
-  lastUpdateTime = millis();
+  if (!patternMs.empty()) {
+    timer.once_ms(patternMs[0], [this] () -> void { changeState(); } );
+  }
 }
 
-void LedDriver::loop() {
+void LedDriver::changeState() {
   if (pin == -1 || patternMs.empty()) {
     return;
   }
 
-  uint32_t now = millis();
-  if (now - lastUpdateTime < patternMs[currentIndex]) {
-    return;
-  }
-
   if (++currentIndex >= patternMs.size()) {
-    currentIndex = 0;
+    if (cycle) {
+      if (patternMs.size() % 2 == 1) {
+        initialState = !initialState;
+      }
+      currentIndex = 0;
+    } else {
+      return;
+    }
   }
 
-  uint8_t state;
-  if (patternMs.size() == 1) {
-    initialState = !initialState;
-    state = initialState;
-  } else if (currentIndex % 2 == 0) {
-    state = initialState;
-  } else {
-    state = !initialState;
-  }
-  digitalWrite(pin, state);
-  lastUpdateTime = now;
+  digitalWrite(pin, currentIndex % 2 == 0 ? initialState : !initialState);
+  timer.once_ms(patternMs[currentIndex], [this] () -> void { changeState(); } );
 }
 
 void LedDriver::setLow() {

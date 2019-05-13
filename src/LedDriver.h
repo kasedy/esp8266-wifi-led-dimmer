@@ -3,22 +3,23 @@
 #include <Arduino.h>
 #include <stdint.h>
 #include <vector>
+#include <Ticker.h>
 
 class LedDriver {
+  Ticker timer;
   uint8_t pin;
   bool initialState;
   std::vector<uint32_t> patternMs;
   uint8_t currentIndex;
-  uint32_t lastUpdateTime;
+  bool cycle;
 
 public:
   LedDriver(uint8_t pin);
-  void setPattern(std::vector<uint32_t> pattern, bool initialState = LOW);
+  void setPattern(std::vector<uint32_t> pattern, bool initialState = LOW, bool cycle = true);
   void blink(uint32_t interval);
   void setLow();
   void setHigh();
-  void loop();
-
 private:
   void init();
+  void changeState();
 };
