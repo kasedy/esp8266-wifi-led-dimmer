@@ -13,8 +13,8 @@
   #define DEVICE_NAME "Testing and Development"
   #define LED_PINS {12, 13, 14, 16}
   #define LOGGING true
-  // #define CAPACITIVE_SENSOR_SEND_PIN 5
-  // #define CAPACITIVE_SENSOR_RECEIVE_PIN 4
+  #define CAPACITIVE_SENSOR_SEND_PIN 5
+  #define CAPACITIVE_SENSOR_RECEIVE_PIN 4
 #elif defined(HARDWARE_KITCHEN_LIGHT)
   #define DEVICE_TYPE "kitchen_light"
   #define DEVICE_NAME "Kitchen Light"
@@ -24,3 +24,23 @@
   #define DEVICE_NAME "Hanging bulbs"
   #define LED_PINS {0}  
 #endif
+
+
+#define MQTT_SERVER "raspberrypi.local"
+#define MQTT_PORT 1883
+
+#define CONFIG_MQTT_PAYLOAD_ON "ON"
+#define CONFIG_MQTT_PAYLOAD_OFF "OFF"
+
+#ifdef BOARD_ID
+  #define HOSTNAME DEVICE_TYPE "_" STRINGIZE(BOARD_ID)
+  #define LED_CONFIG_MQTT_TOPIC_COMMAND "homeassistant/light/" STRINGIZE(BOARD_ID) "/" DEVICE_TYPE
+  #define DEVICE_FULL_NAME DEVICE_NAME " " STRINGIZE(BOARD_ID)
+#else
+  #define HOSTNAME DEVICE_TYPE
+  #define LED_CONFIG_MQTT_TOPIC_COMMAND "homeassistant/light/" DEVICE_TYPE
+  #define DEVICE_FULL_NAME DEVICE_NAME
+#endif
+
+#define LED_CONFIG_MQTT_TOPIC_CONFIG LED_CONFIG_MQTT_TOPIC_COMMAND "/config"
+#define LED_CONFIG_MQTT_TOPIC_STATE LED_CONFIG_MQTT_TOPIC_COMMAND "/state"

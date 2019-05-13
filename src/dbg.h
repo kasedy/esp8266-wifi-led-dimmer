@@ -1,7 +1,6 @@
 #pragma once
 
 #include <HardwareSerial.h>
-
 #include "hardware.h"
 
 #ifndef LOGGING
