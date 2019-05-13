@@ -9,10 +9,12 @@
   #define DEVICE_NAME "Cointreau Bottle 2"
   #define LED_PINS {3, 12, 13, 14, 16}
 #elif defined(HARDWARE_TEST)
-  #define DEVICE_TYPE "test"
+  #define DEVICE_TYPE "DevEnv"
   #define DEVICE_NAME "Testing and Development"
   #define LED_PINS {12, 13, 14, 16}
   #define LOGGING true
+  // #define CAPACITIVE_SENSOR_SEND_PIN 5
+  // #define CAPACITIVE_SENSOR_RECEIVE_PIN 4
 #elif defined(HARDWARE_KITCHEN_LIGHT)
   #define DEVICE_TYPE "kitchen_light"
   #define DEVICE_NAME "Kitchen Light"
