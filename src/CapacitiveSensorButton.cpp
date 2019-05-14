@@ -5,6 +5,7 @@
 #include "average.h"
 
 #include <CapacitiveSensor.h>
+#include <ESP8266WiFi.h>
 
 #define NUM_SAMPLES 100
 #define PROCESSING_INTERVAL 25
@@ -36,6 +37,7 @@ private:
   void onClickHandler();
   void onDoubleClickHandler();
   void onLongPressHandler(bool isFirst);
+  void onMultipleClicksHandler();
 };
 
 
@@ -88,6 +90,8 @@ void CapacitiveSensorButton::loop() {
       onClickHandler();
     } else if (rapidClickCounter == 3) {
       onDoubleClickHandler();
+    } else if (rapidClickCounter >= 21) {
+      onMultipleClicksHandler();
     }
     rapidClickCounter = 1;
   }
@@ -121,6 +125,12 @@ void CapacitiveSensorButton::onLongPressHandler(bool isFirst) {
   }
   lightState->setMaxBrightness(brightness + (lightScrollDirectionUp ? 2 : -2));
   MqttProcessor::broadcastStateViaMqtt();
+}
+
+void CapacitiveSensorButton::onMultipleClicksHandler() {
+  WiFi.disconnect(true);
+  delay(200);
+  ESP.reset();
 }
 
 AbstractCapacitiveSensorButton* AbstractCapacitiveSensorButton::create(LightState* lightState) {
