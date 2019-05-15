@@ -14,10 +14,8 @@ NoAnimation::~NoAnimation() {
 
 void NoAnimation::handle() {
   if (lightState->isStateOnChanged() || lightState->isEffectChanged()) {
-    DBG("NoAnimation::handle change state or effect\n");
     lightState->setPinValue(lightState->isOn() ? lightState->getMaxBrightness() : 0);
   } else if (lightState->isMaxBrightensChanged()) {
-    DBG("NoAnimation::handle brightness changed\n");
     if (lightState->isOn()) {
       lightState->setPinValue(lightState->getMaxBrightness());
     }

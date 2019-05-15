@@ -6,10 +6,11 @@
 
 #include <CapacitiveSensor.h>
 #include <ESP8266WiFi.h>
+#include <RemoteDebug.h>
 
-#define NUM_SAMPLES 100
+#define NUM_SAMPLES 50
 #define PROCESSING_INTERVAL 25
-#define THRESHOLD 900
+#define THRESHOLD 400
 #define CLICK_TIME_THRESHOLD 500
 #define DOUBLE_CLICK_TIME_THRESHOLD 250
 
@@ -27,6 +28,7 @@ class CapacitiveSensorButton : public AbstractCapacitiveSensorButton {
   uint32_t lastDownTime;
   uint32_t lastUpTime;
   uint8_t rapidClickCounter;
+  uint8_t lastChangeBrightness;
   bool lightScrollDirectionUp;
 public:
   // sendPin is a pin with high resistor in front
@@ -48,7 +50,8 @@ CapacitiveSensorButton::CapacitiveSensorButton(uint8_t sendPin, uint8_t receiveP
     lastAverageCalculation(0),
     lastDownTime(0),
     lastUpTime(0),
-    rapidClickCounter(0),
+    rapidClickCounter(1),
+    lastChangeBrightness(0),
     lightScrollDirectionUp(false) {
   cs.set_CS_AutocaL_Millis(0xFFFFFFFF);
   cs.set_CS_Timeout_Millis(200);
@@ -71,6 +74,9 @@ void CapacitiveSensorButton::loop() {
 
     uint32_t averageSensorTime = touchSensorData.getAverage();
     if (isPressed && averageSensorTime < THRESHOLD) {
+      if (rapidClickCounter == 0) {
+        MqttProcessor::broadcastStateViaMqtt();
+      }
       isPressed = false;
       ++rapidClickCounter;
       lastUpTime = now;
@@ -92,8 +98,10 @@ void CapacitiveSensorButton::loop() {
       onDoubleClickHandler();
     } else if (rapidClickCounter >= 21) {
       onMultipleClicksHandler();
+    } 
+    if (rapidClickCounter != 0) {
+      rapidClickCounter = 1;
     }
-    rapidClickCounter = 1;
   }
 
   if (isPressed && now - lastDownTime > CLICK_TIME_THRESHOLD) {
@@ -108,23 +116,41 @@ void CapacitiveSensorButton::onClickHandler() {
 }
 
 void CapacitiveSensorButton::onDoubleClickHandler() {
+  lightState->setStateOn(true);
   if (lightState->nextAnimation()) {
     MqttProcessor::broadcastStateViaMqtt();
   }
 }
 
 void CapacitiveSensorButton::onLongPressHandler(bool isFirst) {
+  uint8_t now = (uint8_t) millis();
   if (isFirst) {
-    lightScrollDirectionUp = !lightScrollDirectionUp;
+    if (!lightState->isOn()) {
+      lightState->setMaxBrightness(0);
+      lightState->setStateOn(true);
+      lightScrollDirectionUp = true;
+    } else {
+      lightScrollDirectionUp = !lightScrollDirectionUp;
+    }
+  } else if ((uint8_t) (now - lastChangeBrightness) < 15) {
+    return;
   }
+  lastChangeBrightness = now;
   uint8_t brightness = lightState->getMaxBrightness();
-  if (brightness >= 254) {
+  uint8_t step = 2; 
+  if (brightness < 30) {
+    step = 1;
+  } else if (brightness > 140 && brightness < 190) {
+    step = 3;
+  } else if (brightness >= 190) {
+    step = 4;
+  }
+  if (brightness > 255 - step) {
     lightScrollDirectionUp = false;
-  } else if (brightness <= 1) {
+  } else if (brightness < step) {
     lightScrollDirectionUp = true;
   }
-  lightState->setMaxBrightness(brightness + (lightScrollDirectionUp ? 2 : -2));
-  MqttProcessor::broadcastStateViaMqtt();
+  lightState->setMaxBrightness(brightness + (lightScrollDirectionUp ? step : -step));
 }
 
 void CapacitiveSensorButton::onMultipleClicksHandler() {
