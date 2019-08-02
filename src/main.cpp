@@ -3,6 +3,8 @@
 #include <ArduinoOTA.h>
 #include <ResetDetector.h>
 #include <WiFiManager.h>
+#include <Hash.h>
+#include <RemoteDebug.h>
 
 #include "LightState.h"
 #include "helpers.h"
@@ -16,6 +18,7 @@
 LightState lightState(LED_PINS, defaultEffects());
 AbstractCapacitiveSensorButton* sensorButton = AbstractCapacitiveSensorButton::create(&lightState);
 LedDriver blueLed(2);
+RemoteDebug Debug;
 
 void setupSmartWifi(bool resetPassword) {
   blueLed.blink(500);
@@ -41,6 +44,7 @@ void setup() {
   Ota::setup();
   randomSeed(ESP.getCycleCount());
   MqttProcessor::setup();
+  Debug.begin(HOSTNAME);
 }
 
 void loop() {
@@ -49,4 +53,5 @@ void loop() {
   }
   lightState.handle();
   sensorButton->loop();
+  Debug.handle();
 }

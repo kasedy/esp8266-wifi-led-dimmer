@@ -10,9 +10,11 @@
 
 #define NUM_SAMPLES 50
 #define PROCESSING_INTERVAL 25
-#define THRESHOLD 400
+#define THRESHOLD 250
 #define CLICK_TIME_THRESHOLD 500
 #define DOUBLE_CLICK_TIME_THRESHOLD 250
+
+extern RemoteDebug Debug;
 
 class DummyCapacitiveSensorButton : public AbstractCapacitiveSensorButton {
 public:
@@ -54,7 +56,7 @@ CapacitiveSensorButton::CapacitiveSensorButton(uint8_t sendPin, uint8_t receiveP
     lastChangeBrightness(0),
     lightScrollDirectionUp(false) {
   cs.set_CS_AutocaL_Millis(0xFFFFFFFF);
-  cs.set_CS_Timeout_Millis(200);
+  cs.set_CS_Timeout_Millis(20);
 }
 
 void CapacitiveSensorButton::loop() {
@@ -73,6 +75,7 @@ void CapacitiveSensorButton::loop() {
     }
 
     uint32_t averageSensorTime = touchSensorData.getAverage();
+    Debug.println(averageSensorTime);
     if (isPressed && averageSensorTime < THRESHOLD) {
       if (rapidClickCounter == 0) {
         MqttProcessor::broadcastStateViaMqtt();

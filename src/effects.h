@@ -33,12 +33,8 @@ Effect effectRandomBlinks() {
 
 std::vector<Effect> defaultEffects() {
   return std::vector<Effect>({
-    noAnimation(), 
-    effectFadeOnSwitch(),
-    effectFadeInCycle(),
-    effectFadeSingleLed(),
-    effectRandomSplashes(),
     effectRandomCompensatedSplashes(),
-    effectRandomBlinks()
+    effectFadeOnSwitch(),
+    effectFadeSingleLed(),
   });
 }
