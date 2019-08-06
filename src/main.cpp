@@ -48,9 +48,7 @@ void setup() {
 }
 
 void loop() {
-  if (!Ota::loop()) {
-    return;
-  }
+  Ota::loop();
   lightState.handle();
   sensorButton->loop();
   Debug.handle();

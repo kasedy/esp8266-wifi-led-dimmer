@@ -18,9 +18,13 @@ namespace Ota {
     ArduinoOTA.onStart(onOTAStart);
   }
 
-
-  bool loop() {
-    ArduinoOTA.handle();
-    return !OTAStarted;
+  void loop() {
+    while (true) {
+      ArduinoOTA.handle();
+      if (!OTAStarted) {
+        return;
+      }
+      yield();
+    }
   }
 };

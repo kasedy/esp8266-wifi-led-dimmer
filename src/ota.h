@@ -2,5 +2,5 @@
 
 namespace Ota {
   void setup();
-  bool loop();
+  void loop();
 };
