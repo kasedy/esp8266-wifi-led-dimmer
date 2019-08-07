@@ -57,13 +57,13 @@ namespace MqttProcessor {
   }
 
   void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
-    Serial.printf("Disconnected from MQTT. Rery in 10 sec. Error code %d\n", reason);
+    DBG("Disconnected from MQTT. Rery in 10 sec. Error code %d\n", reason);
     mqttReconnectTimer.once(10, connectToMqtt);
   }
 
   void broadcastStateViaMqtt() {
     if (!mqttClient.connected()) {
-      Serial.printf("Unable to publish the state to MQTT. Client is not connected.\n");
+      DBG("Unable to publish the state to MQTT. Client is not connected.\n");
       return;
     }
 
@@ -125,8 +125,6 @@ namespace MqttProcessor {
     if (doc.containsKey("white_value")) {
       lightState.setAnimationSpeed(doc["white_value"]);
     }
-
-    broadcastStateViaMqtt();
   }
 
   void setup() {

@@ -18,7 +18,7 @@ class LightState {
   std::vector<PinStatus> pins;
   const std::vector<Effect> effects;
   BaseAnimation *currentEffect;
-  const char *currentEffectName;
+  uint8_t currentAnimationIndex;
   bool stateOn:1;
   bool brightnessChanged:1;
   bool stateOnChanged:1;
@@ -31,6 +31,8 @@ public:
 
   size_t getAvailableAnimationCount();
   const char* getAnimationName(size_t index);
+  uint8_t getCurrentAnimationIndex();
+  void setupAnimation(uint8_t animationIndex);
 
   uint8_t getLedCount() const;
   static int convertBrigtnessToOwmDutyCycle(uint8_t brightness);
@@ -43,7 +45,7 @@ public:
     setStateOn(!isOn());
   }
   void setEffect(const char* effectName);
-  bool nextAnimation();
+  void nextAnimation();
   void handle();
   void setup();
   uint8_t getLedBrightness(uint8_t pinIndex) const;
@@ -57,7 +59,10 @@ public:
   bool isStateOnChanged() const;
   bool isEffectChanged() const;
   bool isAnimationSpeedChanged() const;
-
-private:
-  void setupAnimation(const Effect &effectInfo);
+  bool isChanged() const {
+    return isMaxBrightensChanged() 
+        || isStateOnChanged() 
+        || isEffectChanged() 
+        || isAnimationSpeedChanged();
+  }
 };

@@ -1,7 +1,6 @@
 #include "CapacitiveSensorButton.h"
 #include "hardware.h"
 #include "LightState.h"
-#include "MqttProcessor.h"
 #include "average.h"
 
 #include <CapacitiveSensor.h>
@@ -77,9 +76,6 @@ void CapacitiveSensorButton::loop() {
     uint32_t averageSensorTime = touchSensorData.getAverage();
     Debug.println(averageSensorTime);
     if (isPressed && averageSensorTime < THRESHOLD) {
-      if (rapidClickCounter == 0) {
-        MqttProcessor::broadcastStateViaMqtt();
-      }
       isPressed = false;
       ++rapidClickCounter;
       lastUpTime = now;
@@ -115,14 +111,11 @@ void CapacitiveSensorButton::loop() {
 
 void CapacitiveSensorButton::onClickHandler() {
   lightState->toggleState();
-  MqttProcessor::broadcastStateViaMqtt();
 }
 
 void CapacitiveSensorButton::onDoubleClickHandler() {
   lightState->setStateOn(true);
-  if (lightState->nextAnimation()) {
-    MqttProcessor::broadcastStateViaMqtt();
-  }
+  lightState->nextAnimation();
 }
 
 void CapacitiveSensorButton::onLongPressHandler(bool isFirst) {

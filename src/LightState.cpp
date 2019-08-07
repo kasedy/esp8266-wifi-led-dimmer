@@ -10,11 +10,12 @@ LightState::LightState(const std::vector<PinStatus> &pinsGpio, const std::vector
     pins(pinsGpio), 
     effects(filter_vector(effects, [&](Effect e){ return pinsGpio.size() >= e.pinsRequires; })),
     currentEffect(nullptr),
-    currentEffectName(nullptr),
+    currentAnimationIndex(-1),
     stateOn(true),
     brightnessChanged(false),
     stateOnChanged(false),
     effectChanged(false) {
+  // TODO: make sure we have at least one animation
 }
 
 LightState::~LightState() {
@@ -75,39 +76,34 @@ void LightState::setStateOn(bool newStateOn) {
 }
 
 void LightState::setEffect(const char* effectName) {
-  if (currentEffectName && strcmp(effectName, currentEffectName) == 0) {
-    return;
-  }
-  for (size_t i = 0; i < effects.size(); ++i) {
-    const Effect &effectInfo = effects[i];
-    if (strcmp(effectInfo.name, effectName) == 0) {
-      setupAnimation(effectInfo);
+  for (size_t animationIndex = 0; animationIndex < effects.size(); ++animationIndex) {
+    if (strcmp(effects[animationIndex].name, effectName) == 0) {
+      setupAnimation(animationIndex);
       return;
     }
   }
 }
 
-bool LightState::nextAnimation() {
-  for (size_t animationIndex = 0; animationIndex < effects.size(); ++animationIndex) {
-    const Effect &effectInfo = effects[animationIndex];
-    if (strcmp(effectInfo.name, currentEffectName) == 0) {
-      if (++animationIndex >= effects.size()) {
-        animationIndex = 0;
-      }
-      setupAnimation(effects[animationIndex]);
-      return true;
-    }
+void LightState::nextAnimation() {
+  uint8_t animationIndex = getCurrentAnimationIndex();
+  if (++animationIndex >= effects.size()) {
+    animationIndex = 0;
   }
-  return false;
+  setupAnimation(animationIndex);
 }
 
-void LightState::setupAnimation(const Effect &effectInfo) {
+void LightState::setupAnimation(uint8_t animationIndex) {
+  if (currentAnimationIndex == animationIndex 
+      || animationIndex >= effects.size()) {
+    return;
+  }
   if (currentEffect) {
     delete currentEffect;
   }
+  const Effect &effectInfo = effects[animationIndex];
   currentEffect = effectInfo.animationBuilder(this);
-  currentEffectName = effectInfo.name;
   effectChanged = true;
+  currentAnimationIndex = animationIndex;
 }
 
 void LightState::handle() {
@@ -142,11 +138,15 @@ uint8_t LightState::getMaxBrightness() const {
 }
 
 bool LightState::hasCurrentEffect() const {
-  return currentEffectName;
+  return currentAnimationIndex != -1;
+}
+
+uint8_t LightState::getCurrentAnimationIndex() {
+  return currentAnimationIndex;
 }
 
 const char* LightState::getCurrentEffectName() const {
-  return currentEffectName;
+  return effects[currentAnimationIndex].name;
 }
 
 uint8_t LightState::getAnimationSpeed() const {

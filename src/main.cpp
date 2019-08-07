@@ -14,6 +14,7 @@
 #include "CapacitiveSensorButton.h"
 #include "MqttProcessor.h"
 #include "ota.h"
+#include "WebPortal.h"
 
 LightState lightState(LED_PINS, defaultEffects());
 AbstractCapacitiveSensorButton* sensorButton = AbstractCapacitiveSensorButton::create(&lightState);
@@ -45,11 +46,20 @@ void setup() {
   randomSeed(ESP.getCycleCount());
   MqttProcessor::setup();
   Debug.begin(HOSTNAME);
+  WebPortal::setup();
 }
 
 void loop() {
+  // Stage 0: all what is not related to Light
   Ota::loop();
-  lightState.handle();
-  sensorButton->loop();
   Debug.handle();
+  // Stage 1: read all possible sources that could change Ligst state
+  sensorButton->loop();
+  // Stage 2: notify all sources about Light changes
+  if (lightState.isChanged()) {
+    WebPortal::broadcaseLightChanges();
+    MqttProcessor::broadcastStateViaMqtt();
+  }
+  // Stage 3: play light animation and clear change flags
+  lightState.handle();
 }
