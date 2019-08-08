@@ -16,16 +16,16 @@ namespace MqttProcessor {
 
   void connectToMqtt() {
     if (!WiFi.isConnected()) {
-      Serial.println("Trying to connect MQTT but WiFi is not connected!");
+      DBG("Trying to connect MQTT but WiFi is not connected!");
       mqttReconnectTimer.once(10, connectToMqtt);
     } else if (!mqttClient.connected()) {
-      Serial.println("Connecting to MQTT...");
+      DBG("Connecting to MQTT...");
       mqttClient.connect();
     }
   }
 
   void onMqttConnect(bool sessionPresent) {
-    Serial.printf("Connected to MQTT. Session present: %d\n", sessionPresent);
+    DBG("Connected to MQTT. Session present: %d\n", sessionPresent);
     mqttClient.subscribe(LED_CONFIG_MQTT_TOPIC_COMMAND, 1);
 
     DynamicJsonDocument doc(1024);
@@ -82,7 +82,7 @@ namespace MqttProcessor {
 
     const char* topic = LED_CONFIG_MQTT_TOPIC_STATE;
     DBG("Publishing state to %s -> %s\n", topic, buffer);
-    mqttClient.publish(topic, 2, true, buffer, jsonSize);
+    mqttClient.publish(topic, 2, false, buffer, jsonSize);
   }
 
   void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t length, size_t index, size_t total) {

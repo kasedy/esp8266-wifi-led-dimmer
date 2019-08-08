@@ -15,6 +15,9 @@
 #include "MqttProcessor.h"
 #include "ota.h"
 #include "WebPortal.h"
+#include "EmergencyProtocol.h"
+
+#include <IotWebConf.h>
 
 LightState lightState(LED_PINS, defaultEffects());
 AbstractCapacitiveSensorButton* sensorButton = AbstractCapacitiveSensorButton::create(&lightState);
@@ -23,7 +26,6 @@ RemoteDebug Debug;
 
 void setupSmartWifi(bool resetPassword) {
   blueLed.blink(500);
-  WiFiManagerParameter param();
   WiFiManager wifiManager;
   wifiManager.setMinimumSignalQuality(50);
   if (resetPassword) {
@@ -34,14 +36,13 @@ void setupSmartWifi(bool resetPassword) {
 }
 
 void setup() { 
-  int resetCount = ResetDetector::execute(2000);
 #if LOGGING
   Serial.begin(74880, SERIAL_8N1, SERIAL_TX_ONLY);
   Serial.setDebugOutput(true);
 #endif 
-  DBG("Starting with number of resets = %d\n", resetCount);
+  EmergencyProtocol::checkOnActivation();
   lightState.setup();
-  setupSmartWifi(resetCount >= 3);
+  setupSmartWifi(false);
   Ota::setup();
   randomSeed(ESP.getCycleCount());
   MqttProcessor::setup();
