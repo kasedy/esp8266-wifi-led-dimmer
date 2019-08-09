@@ -16,7 +16,7 @@ class SingleLedFade : public BaseAnimation {
   uint8_t getNextLedIndex() const;
   unsigned long getUpdateInterval();
 public:
-  SingleLedFade(LightState *lightState, uint8_t brightnessOverlap);
+  SingleLedFade(LightController *lightState, uint8_t brightnessOverlap);
   virtual ~SingleLedFade();
   virtual void handle() override;
 

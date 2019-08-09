@@ -27,6 +27,7 @@
   #define LED_PINS {0}  
 #endif
 
+#define LEAD_INDICATOR_PIN 2
 
 #define MQTT_SERVER "raspberrypi.local"
 #define MQTT_PORT 1883

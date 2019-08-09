@@ -1,13 +1,13 @@
 #include "animations/RandomSplashes.h"
 
 #include "dbg.h"
-#include "LightState.h"
+#include "LightController.h"
 
-RandomSplashes::RandomSplashes(LightState *lightState) : RandomSplashes(lightState, {}) {
+RandomSplashes::RandomSplashes(LightController *lightState) : RandomSplashes(lightState, {}) {
 }
 
 RandomSplashes::RandomSplashes(
-    LightState *lightState, 
+    LightController *lightState, 
     std::vector<BrightnessSettings> bSettings) 
     : BaseAnimation(lightState),
     ledInfo(new LedInfo[lightState->getLedCount()]),
@@ -28,14 +28,14 @@ void RandomSplashes::handle() {
 
   if (lightState->isMaxBrightensChanged()) {
     if (lightState->isOn()) {
-      lightState->setPinValue(lightState->getMaxBrightness());
+      lightState->setAllPinValue(lightState->getLightBrightness());
       resetTimers(micros() + 500000);
     }
   }
 
   if (lightState->isStateOnChanged()) {
     if (!lightState->isOn()) {
-      lightState->setPinValue(0);
+      lightState->setAllPinValue(0);
     } else {
       resetTimers(micros());
     }
@@ -58,8 +58,8 @@ void RandomSplashes::handle() {
         brigtnessRange = brightnessSettings[brightnessSettingsIndex];
         brightnessSettingsIndex += 1;
       }
-      uint8_t minBrightness = map(brigtnessRange.minBrightness, 0, 255, 0, lightState->getMaxBrightness());
-      uint8_t maxBrightness = map(brigtnessRange.maxBrightness, 0, 255, 0, lightState->getMaxBrightness());
+      uint8_t minBrightness = map(brigtnessRange.minBrightness, 0, 255, 0, lightState->getLightBrightness());
+      uint8_t maxBrightness = map(brigtnessRange.maxBrightness, 0, 255, 0, lightState->getLightBrightness());
       if (minBrightness == maxBrightness) {
         lightState->setPinValue(index, minBrightness);
       } else {
@@ -95,9 +95,9 @@ unsigned long RandomSplashes::getUpdateInterval() {
 }
 
 Effect RandomSplashes::effect(const char* name) {
-  return {name, [] (LightState *lightState) -> BaseAnimation* { return new RandomSplashes(lightState); } };
+  return {name, [] (LightController *lightState) -> BaseAnimation* { return new RandomSplashes(lightState); } };
 }
 
 Effect RandomSplashes::effect(const char* name, std::vector<BrightnessSettings> brightnessSettings) {
-  return {name, [=] (LightState *lightState) -> BaseAnimation* { return new RandomSplashes(lightState, brightnessSettings); }, 1};
+  return {name, [=] (LightController *lightState) -> BaseAnimation* { return new RandomSplashes(lightState, brightnessSettings); }, 1};
 }

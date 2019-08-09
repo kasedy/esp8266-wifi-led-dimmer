@@ -5,7 +5,7 @@
 
 #include <Esp.h>
 
-class LightState {
+class LightController {
   struct PinStatus {
     PinStatus(uint8_t gpio) : gpio(1, gpio), brightness(255) {}
     PinStatus(std::initializer_list<uint8_t> gpio) : gpio(gpio), brightness(255) {}
@@ -26,35 +26,34 @@ class LightState {
   bool animationSpeedChanged:1;
 
 public:
-  LightState(const std::vector<PinStatus> &pinsGpio, const std::vector<Effect> &effects);
-  ~LightState();
+  LightController(const std::vector<PinStatus> &pinsGpio, const std::vector<Effect> &effects);
+  ~LightController();
 
-  size_t getAvailableAnimationCount();
-  const char* getAnimationName(size_t index);
+  void loop();
+
+  bool isOn() const;
+  void setStateOn(bool newStateOn);
+  void toggleState();
+
+  size_t getAnimationCount();
   uint8_t getCurrentAnimationIndex();
-  void setupAnimation(uint8_t animationIndex);
+  const char* getAnimationName(size_t index);
+  const char* getCurrentAnimationName() const;
+  void nextAnimation();
+  void setAnimationByIndex(uint8_t animationIndex);
+  void setAnimationByName(const char* effectName);
+
+  void setLightBrightness(uint8_t newMaxBrightness);
+  uint8_t getLightBrightness() const;
+
+  void setAnimationSpeed(uint8_t newAnimationSpeed);
+  uint8_t getAnimationSpeed() const;
+
+  void setPinValue(uint8_t pinIndex, uint8_t brightness);
+  void setAllPinValue(uint8_t brightness);
+  uint8_t getLedBrightness(uint8_t pinIndex) const;
 
   uint8_t getLedCount() const;
-  static int convertBrigtnessToOwmDutyCycle(uint8_t brightness);
-  void setPinValue(uint8_t pinIndex, uint8_t brightness);
-  void setPinValue(uint8_t brightness);
-  void setMaxBrightness(uint8_t newMaxBrightness);
-  void setAnimationSpeed(uint8_t newAnimationSpeed);
-  void setStateOn(bool newStateOn);
-  void toggleState() {
-    setStateOn(!isOn());
-  }
-  void setEffect(const char* effectName);
-  void nextAnimation();
-  void handle();
-  void setup();
-  uint8_t getLedBrightness(uint8_t pinIndex) const;
-  uint8_t getMaxBrightness() const;
-  bool hasCurrentEffect() const;
-  const char* getCurrentEffectName() const;
-  uint8_t getAnimationSpeed() const;
-  bool isOn() const;
-
   bool isMaxBrightensChanged() const;
   bool isStateOnChanged() const;
   bool isEffectChanged() const;

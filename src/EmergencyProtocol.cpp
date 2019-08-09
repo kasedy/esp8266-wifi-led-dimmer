@@ -25,13 +25,14 @@ namespace EmergencyProtocol {
   }
   
   void checkOnActivation() {
+    digitalWrite(LEAD_INDICATOR_PIN, HIGH);
     uint8_t numResets = ResetDetector::execute(ALLOWED_TIME_INTERVAL_BETWEEN_RESETS);
     DBG("Starting with %d reset(s)\n", numResets);
     if (numResets < EMERGENCY_THRESHOLD) {
       return;
     }
     DBG("Acivating EMERGENCY protocol!\n");
-    digitalWrite(2, LOW);
+    digitalWrite(LEAD_INDICATOR_PIN, LOW);
     if (WiFi.SSID().length() > 0) {
       DBG("Trying to connect with saved credantials\n");
       if (!WiFi.isConnected()) {

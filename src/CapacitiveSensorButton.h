@@ -1,9 +1,9 @@
 #pragma once
 
-class LightState;
+class LightController;
 
 class AbstractCapacitiveSensorButton {
 public:
-  static AbstractCapacitiveSensorButton* create(LightState* lightState);
+  static AbstractCapacitiveSensorButton* create(LightController* lightState);
   virtual void loop();
 };

@@ -1,9 +1,9 @@
 #include "animations/SingleLedFade.h"
 
 #include <functional>
-#include "LightState.h"
+#include "LightController.h"
 
-SingleLedFade::SingleLedFade(LightState *lightState, uint8_t brightnessOverlap) : 
+SingleLedFade::SingleLedFade(LightController *lightState, uint8_t brightnessOverlap) : 
     BaseAnimation(lightState),
     brightnessOverlap(brightnessOverlap),
     currentLed(0),
@@ -18,14 +18,14 @@ void SingleLedFade::handle() {
   if (lightState->isEffectChanged()) {
     currentLed = 0;
     for (int i = 0; i < lightState->getLedCount(); ++i) {
-      lightState->setPinValue(i, i == currentLed ? lightState->getMaxBrightness() : 0);
+      lightState->setPinValue(i, i == currentLed ? lightState->getLightBrightness() : 0);
     }
     return;
   }
 
   if (lightState->isStateOnChanged()) {
     if (!lightState->isOn()) {
-      lightState->setPinValue(0);
+      lightState->setAllPinValue(0);
       return;
     }
   }
@@ -33,14 +33,14 @@ void SingleLedFade::handle() {
   if (lightState->isMaxBrightensChanged()) {
     if (lightState->isOn()) {
       for (int i = 0; i < lightState->getLedCount(); ++i) {
-        lightState->setPinValue(i, i == currentLed ? lightState->getMaxBrightness() : 0);
+        lightState->setPinValue(i, i == currentLed ? lightState->getLightBrightness() : 0);
       }
       return;
     }
   }
 
   if (!lightState->isOn() 
-        || lightState->getMaxBrightness() == 0 
+        || lightState->getLightBrightness() == 0 
         || micros() - lastUpdateTime < getUpdateInterval()) {
     return;
   }
@@ -52,7 +52,7 @@ void SingleLedFade::handle() {
     raising = true;
   }
   
-  if (currentLedBrightness == lightState->getMaxBrightness()) {
+  if (currentLedBrightness == lightState->getLightBrightness()) {
     raising = false;
   }
 
@@ -76,10 +76,10 @@ uint8_t SingleLedFade::getNextLedIndex() const {
 
 unsigned long SingleLedFade::getUpdateInterval() {
   int32_t multiplier = map(lightState->getAnimationSpeed(), 0, 255, -50, 50);
-  if (lightState->getMaxBrightness() == 0) {
+  if (lightState->getLightBrightness() == 0) {
     return -1;
   }
-  unsigned long refreshInterval = 2000000 / lightState->getMaxBrightness(); // microseconds
+  unsigned long refreshInterval = 2000000 / lightState->getLightBrightness(); // microseconds
   if (multiplier < 0) {
     refreshInterval += refreshInterval * (-multiplier) / 10;
   } else if (multiplier > 0) {
@@ -89,5 +89,5 @@ unsigned long SingleLedFade::getUpdateInterval() {
 }
 
 Effect SingleLedFade::effect(const char* name, uint8_t brightnessOverlap) {
-  return {name, [=] (LightState *lightState) -> BaseAnimation* { return new SingleLedFade(lightState, brightnessOverlap); }, 2};
+  return {name, [=] (LightController *lightState) -> BaseAnimation* { return new SingleLedFade(lightState, brightnessOverlap); }, 2};
 }

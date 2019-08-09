@@ -15,7 +15,7 @@ class FadeCycle : public BaseAnimation {
   unsigned long getUpdateInterval();
 
 public:
-  FadeCycle(LightState *lightState);
+  FadeCycle(LightController *lightState);
   virtual ~FadeCycle();
   virtual void handle() override;
 

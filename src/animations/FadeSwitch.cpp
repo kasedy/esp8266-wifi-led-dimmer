@@ -2,9 +2,9 @@
 
 #include "dbg.h"
 #include "helpers.h"
-#include "LightState.h"
+#include "LightController.h"
 
-FadeSwitch::FadeSwitch(LightState *lightState) : 
+FadeSwitch::FadeSwitch(LightController *lightState) : 
     BaseAnimation(lightState) {
   DBG("FadeSwitch constructed;\n");
 }
@@ -30,15 +30,15 @@ void FadeSwitch::handle() {
 void FadeSwitch::updateBrightness(uint8_t newValue) {
     lastUpdateTime = micros();
     currentBrightness = newValue;
-    lightState->setPinValue(currentBrightness);
+    lightState->setAllPinValue(currentBrightness);
 }
 
 uint8_t FadeSwitch::getEndBrightness() const {
-  return lightState->isOn() ? lightState->getMaxBrightness() : 0;
+  return lightState->isOn() ? lightState->getLightBrightness() : 0;
 }
 
 uint8_t FadeSwitch::getStartBrightness() const {
-  return lightState->isOn() ? 0 : lightState->getMaxBrightness();
+  return lightState->isOn() ? 0 : lightState->getLightBrightness();
 }
 
 unsigned long FadeSwitch::getUpdateInterval() {
@@ -57,5 +57,5 @@ unsigned long FadeSwitch::getUpdateInterval() {
 }
 
 Effect FadeSwitch::effect(const char* name) {
-  return {name, [] (LightState *lightState) -> BaseAnimation* { return new FadeSwitch(lightState); }, 1};
+  return {name, [] (LightController *lightState) -> BaseAnimation* { return new FadeSwitch(lightState); }, 1};
 }

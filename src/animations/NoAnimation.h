@@ -7,7 +7,7 @@
  */ 
 class NoAnimation : public BaseAnimation {
 public:
-  NoAnimation(LightState *lightState);
+  NoAnimation(LightController *lightState);
   virtual ~NoAnimation();
   virtual void handle() override;
 

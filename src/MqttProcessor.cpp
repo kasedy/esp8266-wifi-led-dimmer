@@ -1,14 +1,14 @@
 #include "MqttProcessor.h"
 #include "config.h"
 #include "dbg.h"
-#include "LightState.h"
+#include "LightController.h"
 
 #include <ESP8266WiFi.h>
 #include <Ticker.h>
 #include <AsyncMqttClient.h>
 #include <ArduinoJson.h>
 
-extern LightState lightState;
+extern LightController lightState;
 
 namespace MqttProcessor {
   AsyncMqttClient mqttClient;
@@ -38,12 +38,12 @@ namespace MqttProcessor {
     doc["optimistic"] = false;
     doc["qos"] = 2;
     doc["retain"] = true;
-    doc["effect"] = lightState.getAvailableAnimationCount() > 0;
+    doc["effect"] = lightState.getAnimationCount() > 0;
     doc["white_value"] = true;
 
-    if (lightState.getAvailableAnimationCount() > 0) {
+    if (lightState.getAnimationCount() > 0) {
       JsonArray effectList = doc.createNestedArray("effect_list");
-      for (size_t i = 0; i < lightState.getAvailableAnimationCount(); ++i) {
+      for (size_t i = 0; i < lightState.getAnimationCount(); ++i) {
         effectList.add(lightState.getAnimationName(i));
       }
     }
@@ -70,9 +70,9 @@ namespace MqttProcessor {
     StaticJsonDocument<JSON_OBJECT_SIZE(20)> doc;
 
     doc["state"] = lightState.isOn() ? CONFIG_MQTT_PAYLOAD_ON : CONFIG_MQTT_PAYLOAD_OFF;
-    doc["brightness"] = lightState.getMaxBrightness();
-    if (lightState.hasCurrentEffect()) {
-      doc["effect"] = lightState.getCurrentEffectName();
+    doc["brightness"] = lightState.getLightBrightness();
+    if (lightState.getCurrentAnimationIndex() != -1) {
+      doc["effect"] = lightState.getCurrentAnimationName();
     }
     doc["white_value"] = lightState.getAnimationSpeed();
 
@@ -115,11 +115,11 @@ namespace MqttProcessor {
     }
 
     if (doc.containsKey("brightness")) {
-      lightState.setMaxBrightness(doc["brightness"]);
+      lightState.setLightBrightness(doc["brightness"]);
     }
 
     if (doc.containsKey("effect")) {
-      lightState.setEffect(doc["effect"]);
+      lightState.setAnimationByName(doc["effect"]);
     }
 
     if (doc.containsKey("white_value")) {

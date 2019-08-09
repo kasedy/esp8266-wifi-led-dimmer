@@ -1,10 +1,10 @@
 #include "animations/RandomSplashesCompensated.h"
 
 #include "dbg.h"
-#include "LightState.h"
+#include "LightController.h"
 
 
-RandomSplashesCompensated::RandomSplashesCompensated(LightState *lightState) 
+RandomSplashesCompensated::RandomSplashesCompensated(LightController *lightState) 
     : BaseAnimation(lightState),
     timeToChangeBrightness(0),
     currentLedIndex(0) {
@@ -23,20 +23,20 @@ void RandomSplashesCompensated::handle() {
 
   if (lightState->isMaxBrightensChanged()) {
     if (lightState->isOn()) {
-      lightState->setPinValue(lightState->getMaxBrightness());
+      lightState->setAllPinValue(lightState->getLightBrightness());
       resetTimers(micros() + 500000);
     }
   }
 
   if (lightState->isStateOnChanged()) {
     if (!lightState->isOn()) {
-      lightState->setPinValue(0);
+      lightState->setAllPinValue(0);
     } else {
       resetTimers(micros());
     }
   }
 
-  if (!lightState->isOn() || lightState->getMaxBrightness() == 0) {
+  if (!lightState->isOn() || lightState->getLightBrightness() == 0) {
     return;
   }
 
@@ -50,7 +50,7 @@ void RandomSplashesCompensated::handle() {
   }
 
   while (true) {
-    uint8_t newBrightness = random(lightState->getMaxBrightness());
+    uint8_t newBrightness = random(lightState->getLightBrightness());
     if (newBrightness != lightState->getLedBrightness(currentLedIndex)) {
       lightState->setPinValue(currentLedIndex, newBrightness);
       break;
@@ -64,13 +64,13 @@ void RandomSplashesCompensated::handle() {
     }
     
     // one led off the other MAX, it is maximum brightness we could achive. 
-    int32_t idealBrightness = lightState->getMaxBrightness() * (lightState->getLedCount() - 1);
+    int32_t idealBrightness = lightState->getLightBrightness() * (lightState->getLedCount() - 1);
     int32_t brightnessDelta = (idealBrightness - brightnessTotal) / (lightState->getLedCount() - 1);
 
     for (uint8_t i = 0; i < lightState->getLedCount(); ++i) {
       if (i != currentLedIndex) {
         int32_t newBrightness = lightState->getLedBrightness(i) + brightnessDelta;
-        lightState->setPinValue(i, constrain(newBrightness, 0, lightState->getMaxBrightness()));
+        lightState->setPinValue(i, constrain(newBrightness, 0, lightState->getLightBrightness()));
       }    
     }
   }
@@ -95,5 +95,5 @@ unsigned long RandomSplashesCompensated::getUpdateInterval() {
 }
 
 Effect RandomSplashesCompensated::effect(const char* name) {
-  return {name, [] (LightState *lightState) -> BaseAnimation* { return new RandomSplashesCompensated(lightState); }, 3};
+  return {name, [] (LightController *lightState) -> BaseAnimation* { return new RandomSplashesCompensated(lightState); }, 3};
 }

@@ -2,20 +2,20 @@
 
 #include <functional>
 
-struct LightState;
+struct LightController;
 
 class BaseAnimation {
 protected:
-  LightState * const lightState;
+  LightController * const lightState;
 
 public:
-  BaseAnimation(LightState *lightState) : lightState(lightState) {}
+  BaseAnimation(LightController *lightState) : lightState(lightState) {}
   virtual ~BaseAnimation() {}
   virtual void handle() = 0;
 };
 
 struct Effect {
   const char* name;
-  std::function<BaseAnimation* (LightState *lightState)> animationBuilder;
+  std::function<BaseAnimation* (LightController *lightState)> animationBuilder;
   uint8_t pinsRequires;
 };

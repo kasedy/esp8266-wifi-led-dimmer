@@ -25,9 +25,9 @@ private:
   void resetTimers(unsigned long timeToChangeBrightness);
 
 public:
-  RandomSplashes(LightState *lightState);
+  RandomSplashes(LightController *lightState);
   RandomSplashes(
-    LightState *lightState, 
+    LightController *lightState, 
     std::vector<BrightnessSettings> brightnessSettings);
   virtual ~RandomSplashes();
   virtual void handle() override;

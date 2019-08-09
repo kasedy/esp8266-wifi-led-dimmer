@@ -7,7 +7,7 @@
 #include <RemoteDebug.h>
 #include <ESPAsyncWebServer.h>
 
-#include "LightState.h"
+#include "LightController.h"
 #include "helpers.h"
 #include "effects.h"
 #include "LedDriver.h"
@@ -18,12 +18,12 @@
 #include "WebPortal.h"
 #include "EmergencyProtocol.h"
 
-LightState lightState(LED_PINS, defaultEffects());
-AbstractCapacitiveSensorButton* sensorButton = AbstractCapacitiveSensorButton::create(&lightState);
-LedDriver blueLed(2, HIGH);
+LightController lightState(LED_PINS, defaultEffects());
+AbstractCapacitiveSensorButton* sensorButton;
 RemoteDebug Debug;
 
 void setupWifi() {
+  LedDriver blueLed(LEAD_INDICATOR_PIN, HIGH);
   blueLed.blink(500);
   AsyncWebServer webServer(80);
   DNSServer dns;
@@ -31,7 +31,7 @@ void setupWifi() {
   wifiManager.setMinimumSignalQuality(60);
   wifiManager.setLoopExtraRoutine([] () {
     sensorButton->loop();
-    lightState.handle();
+    lightState.loop();
   });
   wifiManager.autoConnect(HOSTNAME);
   blueLed.setHigh();
@@ -43,7 +43,7 @@ void setup() {
   Serial.setDebugOutput(true);
 #endif 
   EmergencyProtocol::checkOnActivation();
-  lightState.setup();
+  sensorButton = AbstractCapacitiveSensorButton::create(&lightState);
   setupWifi();
   Ota::setup();
   randomSeed(ESP.getCycleCount());
@@ -64,5 +64,5 @@ void loop() {
     MqttProcessor::broadcastStateViaMqtt();
   }
   // Stage 3: play light animation and clear change flags
-  lightState.handle();
+  lightState.loop();
 }

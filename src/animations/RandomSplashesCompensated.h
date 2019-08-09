@@ -12,7 +12,7 @@ class RandomSplashesCompensated : public BaseAnimation {
   void resetTimers(unsigned long timeToChangeBrightness);
 
 public:
-  RandomSplashesCompensated(LightState *lightState);
+  RandomSplashesCompensated(LightController *lightState);
   virtual ~RandomSplashesCompensated();
   virtual void handle() override;
 

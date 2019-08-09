@@ -1,6 +1,6 @@
 #include "CapacitiveSensorButton.h"
 #include "hardware.h"
-#include "LightState.h"
+#include "LightController.h"
 #include "average.h"
 
 #include <CapacitiveSensor.h>
@@ -21,7 +21,7 @@ public:
 };
 
 class CapacitiveSensorButton : public AbstractCapacitiveSensorButton {
-  LightState* lightState;
+  LightController* lightState;
   CapacitiveSensor cs;
   AverageValueCalculator<uint32_t, uint32_t> touchSensorData;
   bool isPressed;
@@ -33,7 +33,7 @@ class CapacitiveSensorButton : public AbstractCapacitiveSensorButton {
   bool lightScrollDirectionUp;
 public:
   // sendPin is a pin with high resistor in front
-  CapacitiveSensorButton(uint8_t sendPin, uint8_t receivePin, LightState* lightState);
+  CapacitiveSensorButton(uint8_t sendPin, uint8_t receivePin, LightController* lightState);
   virtual void loop();
 
 private:
@@ -44,7 +44,7 @@ private:
 };
 
 
-CapacitiveSensorButton::CapacitiveSensorButton(uint8_t sendPin, uint8_t receivePin, LightState* lightState) : 
+CapacitiveSensorButton::CapacitiveSensorButton(uint8_t sendPin, uint8_t receivePin, LightController* lightState) : 
     lightState(lightState),
     cs(CapacitiveSensor(sendPin, receivePin)),
     isPressed(false),
@@ -122,7 +122,7 @@ void CapacitiveSensorButton::onLongPressHandler(bool isFirst) {
   uint8_t now = (uint8_t) millis();
   if (isFirst) {
     if (!lightState->isOn()) {
-      lightState->setMaxBrightness(0);
+      lightState->setLightBrightness(0);
       lightState->setStateOn(true);
       lightScrollDirectionUp = true;
     } else {
@@ -132,7 +132,7 @@ void CapacitiveSensorButton::onLongPressHandler(bool isFirst) {
     return;
   }
   lastChangeBrightness = now;
-  uint8_t brightness = lightState->getMaxBrightness();
+  uint8_t brightness = lightState->getLightBrightness();
   uint8_t step = 2; 
   if (brightness < 30) {
     step = 1;
@@ -146,7 +146,7 @@ void CapacitiveSensorButton::onLongPressHandler(bool isFirst) {
   } else if (brightness < step) {
     lightScrollDirectionUp = true;
   }
-  lightState->setMaxBrightness(brightness + (lightScrollDirectionUp ? step : -step));
+  lightState->setLightBrightness(brightness + (lightScrollDirectionUp ? step : -step));
 }
 
 void CapacitiveSensorButton::onMultipleClicksHandler() {
@@ -155,7 +155,7 @@ void CapacitiveSensorButton::onMultipleClicksHandler() {
   ESP.reset();
 }
 
-AbstractCapacitiveSensorButton* AbstractCapacitiveSensorButton::create(LightState* lightState) {
+AbstractCapacitiveSensorButton* AbstractCapacitiveSensorButton::create(LightController* lightState) {
 #if defined(CAPACITIVE_SENSOR_SEND_PIN) && defined(CAPACITIVE_SENSOR_RECEIVE_PIN)
   return new CapacitiveSensorButton(CAPACITIVE_SENSOR_SEND_PIN, CAPACITIVE_SENSOR_RECEIVE_PIN, lightState);
 #else
