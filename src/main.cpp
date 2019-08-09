@@ -24,13 +24,10 @@ AbstractCapacitiveSensorButton* sensorButton = AbstractCapacitiveSensorButton::c
 LedDriver blueLed(2);
 RemoteDebug Debug;
 
-void setupSmartWifi(bool resetPassword) {
+void setupWifi() {
   blueLed.blink(500);
   WiFiManager wifiManager;
-  wifiManager.setMinimumSignalQuality(50);
-  if (resetPassword) {
-    wifiManager.resetSettings();
-  }
+  wifiManager.setMinimumSignalQuality(60);
   wifiManager.autoConnect(HOSTNAME);
   blueLed.setHigh();
 }
@@ -42,7 +39,7 @@ void setup() {
 #endif 
   EmergencyProtocol::checkOnActivation();
   lightState.setup();
-  setupSmartWifi(false);
+  setupWifi();
   Ota::setup();
   randomSeed(ESP.getCycleCount());
   MqttProcessor::setup();
