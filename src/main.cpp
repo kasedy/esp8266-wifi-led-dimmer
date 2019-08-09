@@ -1,12 +1,3 @@
-#include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
-#include <ArduinoOTA.h>
-#include <ResetDetector.h>
-#include <ESPAsyncWiFiManager.h>
-#include <Hash.h>
-#include <RemoteDebug.h>
-#include <ESPAsyncWebServer.h>
-
 #include "LightController.h"
 #include "helpers.h"
 #include "effects.h"
@@ -17,6 +8,15 @@
 #include "ota.h"
 #include "WebPortal.h"
 #include "EmergencyProtocol.h"
+
+#include <ESP8266WiFi.h>
+#include <ESP8266mDNS.h>
+#include <ArduinoOTA.h>
+#include <ResetDetector.h>
+#include <ESPAsyncWiFiManager.h>
+#include <Hash.h>
+#include <RemoteDebug.h>
+#include <ESPAsyncWebServer.h>
 
 LightController *lightController;
 AbstractCapacitiveSensorButton* sensorButton;
