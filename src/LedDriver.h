@@ -14,12 +14,12 @@ class LedDriver {
   bool cycle;
 
 public:
-  LedDriver(uint8_t pin);
+  LedDriver(uint8_t pin, bool state=LOW);
   void setPattern(std::vector<uint32_t> pattern, bool initialState = LOW, bool cycle = true);
   void blink(uint32_t interval);
   void setLow();
   void setHigh();
 private:
-  void init();
+  void updateLed();
   void changeState();
 };

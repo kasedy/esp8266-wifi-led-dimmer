@@ -16,10 +16,10 @@ namespace MqttProcessor {
 
   void connectToMqtt() {
     if (!WiFi.isConnected()) {
-      DBG("Trying to connect MQTT but WiFi is not connected!");
+      DBG("Trying to connect MQTT but WiFi is not connected!\n");
       mqttReconnectTimer.once(10, connectToMqtt);
     } else if (!mqttClient.connected()) {
-      DBG("Connecting to MQTT...");
+      DBG("Connecting to MQTT...\n");
       mqttClient.connect();
     }
   }

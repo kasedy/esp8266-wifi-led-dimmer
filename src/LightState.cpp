@@ -11,7 +11,7 @@ LightState::LightState(const std::vector<PinStatus> &pinsGpio, const std::vector
     effects(filter_vector(effects, [&](Effect e){ return pinsGpio.size() >= e.pinsRequires; })),
     currentEffect(nullptr),
     currentAnimationIndex(-1),
-    stateOn(true),
+    stateOn(false),
     brightnessChanged(false),
     stateOnChanged(false),
     effectChanged(false) {

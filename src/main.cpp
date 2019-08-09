@@ -2,9 +2,10 @@
 #include <ESP8266mDNS.h>
 #include <ArduinoOTA.h>
 #include <ResetDetector.h>
-#include <WiFiManager.h>
+#include <ESPAsyncWiFiManager.h>
 #include <Hash.h>
 #include <RemoteDebug.h>
+#include <ESPAsyncWebServer.h>
 
 #include "LightState.h"
 #include "helpers.h"
@@ -17,17 +18,21 @@
 #include "WebPortal.h"
 #include "EmergencyProtocol.h"
 
-#include <IotWebConf.h>
-
 LightState lightState(LED_PINS, defaultEffects());
 AbstractCapacitiveSensorButton* sensorButton = AbstractCapacitiveSensorButton::create(&lightState);
-LedDriver blueLed(2);
+LedDriver blueLed(2, HIGH);
 RemoteDebug Debug;
 
 void setupWifi() {
   blueLed.blink(500);
-  WiFiManager wifiManager;
+  AsyncWebServer webServer(80);
+  DNSServer dns;
+  AsyncWiFiManager wifiManager(&webServer, &dns);
   wifiManager.setMinimumSignalQuality(60);
+  wifiManager.setLoopExtraRoutine([] () {
+    sensorButton->loop();
+    lightState.handle();
+  });
   wifiManager.autoConnect(HOSTNAME);
   blueLed.setHigh();
 }
