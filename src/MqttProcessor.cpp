@@ -8,7 +8,7 @@
 #include <AsyncMqttClient.h>
 #include <ArduinoJson.h>
 
-extern LightController lightState;
+extern LightController *lightController;
 
 namespace MqttProcessor {
   AsyncMqttClient mqttClient;
@@ -38,13 +38,13 @@ namespace MqttProcessor {
     doc["optimistic"] = false;
     doc["qos"] = 2;
     doc["retain"] = true;
-    doc["effect"] = lightState.getAnimationCount() > 0;
+    doc["effect"] = lightController->getAnimationCount() > 0;
     doc["white_value"] = true;
 
-    if (lightState.getAnimationCount() > 0) {
+    if (lightController->getAnimationCount() > 0) {
       JsonArray effectList = doc.createNestedArray("effect_list");
-      for (size_t i = 0; i < lightState.getAnimationCount(); ++i) {
-        effectList.add(lightState.getAnimationName(i));
+      for (size_t i = 0; i < lightController->getAnimationCount(); ++i) {
+        effectList.add(lightController->getAnimationName(i));
       }
     }
     
@@ -69,12 +69,12 @@ namespace MqttProcessor {
 
     StaticJsonDocument<JSON_OBJECT_SIZE(20)> doc;
 
-    doc["state"] = lightState.isOn() ? CONFIG_MQTT_PAYLOAD_ON : CONFIG_MQTT_PAYLOAD_OFF;
-    doc["brightness"] = lightState.getLightBrightness();
-    if (lightState.getCurrentAnimationIndex() != -1) {
-      doc["effect"] = lightState.getCurrentAnimationName();
+    doc["state"] = lightController->isOn() ? CONFIG_MQTT_PAYLOAD_ON : CONFIG_MQTT_PAYLOAD_OFF;
+    doc["brightness"] = lightController->getLightBrightness();
+    if (lightController->getCurrentAnimationIndex() != -1) {
+      doc["effect"] = lightController->getCurrentAnimationName();
     }
-    doc["white_value"] = lightState.getAnimationSpeed();
+    doc["white_value"] = lightController->getAnimationSpeed();
 
     size_t jsonSize = measureJson(doc);
     char buffer[jsonSize + 1];
@@ -106,24 +106,24 @@ namespace MqttProcessor {
       Serial.printf("State = %s\n", state);
       if (strcmp(doc["state"], CONFIG_MQTT_PAYLOAD_ON) == 0) {
         Serial.print("Switching ON\n");
-        lightState.setStateOn(true);
+        lightController->setStateOn(true);
       }
       else if (strcmp(doc["state"], CONFIG_MQTT_PAYLOAD_OFF) == 0) {
         Serial.print("Switching OFF\n");
-        lightState.setStateOn(false);
+        lightController->setStateOn(false);
       }
     }
 
     if (doc.containsKey("brightness")) {
-      lightState.setLightBrightness(doc["brightness"]);
+      lightController->setLightBrightness(doc["brightness"]);
     }
 
     if (doc.containsKey("effect")) {
-      lightState.setAnimationByName(doc["effect"]);
+      lightController->setAnimationByName(doc["effect"]);
     }
 
     if (doc.containsKey("white_value")) {
-      lightState.setAnimationSpeed(doc["white_value"]);
+      lightController->setAnimationSpeed(doc["white_value"]);
     }
   }
 

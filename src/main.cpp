@@ -18,7 +18,7 @@
 #include "WebPortal.h"
 #include "EmergencyProtocol.h"
 
-LightController lightState(LED_PINS, defaultEffects());
+LightController *lightController;
 AbstractCapacitiveSensorButton* sensorButton;
 RemoteDebug Debug;
 
@@ -31,7 +31,7 @@ void setupWifi() {
   wifiManager.setMinimumSignalQuality(60);
   wifiManager.setLoopExtraRoutine([] () {
     sensorButton->loop();
-    lightState.loop();
+    lightController->loop();
   });
   wifiManager.autoConnect(HOSTNAME);
   blueLed.setHigh();
@@ -43,7 +43,8 @@ void setup() {
   Serial.setDebugOutput(true);
 #endif 
   EmergencyProtocol::checkOnActivation();
-  sensorButton = AbstractCapacitiveSensorButton::create(&lightState);
+  lightController = new LightController(LED_PINS, defaultEffects());
+  sensorButton = AbstractCapacitiveSensorButton::create(lightController);
   setupWifi();
   Ota::setup();
   randomSeed(ESP.getCycleCount());
@@ -59,10 +60,10 @@ void loop() {
   // Stage 1: read all possible sources that could change Ligst state
   sensorButton->loop();
   // Stage 2: notify all sources about Light changes
-  if (lightState.isChanged()) {
+  if (lightController->isChanged()) {
     WebPortal::broadcaseLightChanges();
     MqttProcessor::broadcastStateViaMqtt();
   }
   // Stage 3: play light animation and clear change flags
-  lightState.loop();
+  lightController->loop();
 }

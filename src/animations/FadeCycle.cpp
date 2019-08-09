@@ -4,8 +4,8 @@
 #include "LightController.h"
 
 
-FadeCycle::FadeCycle(LightController *lightState) 
-    : BaseAnimation(lightState) {
+FadeCycle::FadeCycle(LightController *lightController) 
+    : BaseAnimation(lightController) {
   DBG("FadeCycle constructed!\n");
 }
 
@@ -14,64 +14,64 @@ FadeCycle::~FadeCycle() {
 }
 
 void FadeCycle::handle() {
-  if (lightState->isAnimationSpeedChanged()) {
+  if (lightController->isAnimationSpeedChanged()) {
     DBG("Refresh interval changed to %lu;\n", getUpdateInterval());
   }
 
-  if (lightState->isEffectChanged()) {
-    if (lightState->isOn()) {
+  if (lightController->isEffectChanged()) {
+    if (lightController->isOn()) {
       uint16_t averageBrightness = 0;
-      for (size_t i = 0; i < lightState->getLedCount(); ++i) {
-        averageBrightness += lightState->getLedBrightness(i);
+      for (size_t i = 0; i < lightController->getLedCount(); ++i) {
+        averageBrightness += lightController->getLedBrightness(i);
       }
-      changeBrightness(averageBrightness / lightState->getLedCount());
+      changeBrightness(averageBrightness / lightController->getLedCount());
     } else {
       changeBrightness(0);
     }
     return;
   }
 
-  if (lightState->isStateOnChanged()) {
-    if (!lightState->isOn()) {
+  if (lightController->isStateOnChanged()) {
+    if (!lightController->isOn()) {
       changeBrightness(0);
       return;
     }
   }
 
-  if (lightState->isMaxBrightensChanged()) {
-    DBG("Max brightness changed to %d. Refresh interval changed to %lu;\n", lightState->getLightBrightness(), getUpdateInterval());
-    if (lightState->isOn()) {
-      changeBrightness(lightState->getLightBrightness());
+  if (lightController->isMaxBrightensChanged()) {
+    DBG("Max brightness changed to %d. Refresh interval changed to %lu;\n", lightController->getLightBrightness(), getUpdateInterval());
+    if (lightController->isOn()) {
+      changeBrightness(lightController->getLightBrightness());
       return;
     }
   }
 
-  if (!lightState->isOn() 
-        || lightState->getLightBrightness() == 0 
+  if (!lightController->isOn() 
+        || lightController->getLightBrightness() == 0 
         || micros() - lastUpdateTime < getUpdateInterval()) {
     return;
   }
 
   if (actualBrightness == 0) {
     step = 1;
-  } else if (actualBrightness == lightState->getLightBrightness()) {
+  } else if (actualBrightness == lightController->getLightBrightness()) {
     step = -1;
   }
   changeBrightness(actualBrightness + step);
 }
 
 void FadeCycle::changeBrightness(uint8_t newBrightness) {
-  lightState->setAllPinValue(newBrightness);
+  lightController->setAllPinValue(newBrightness);
   actualBrightness = newBrightness;
   lastUpdateTime = micros();
 }
 
 unsigned long FadeCycle::getUpdateInterval() {
-  int32_t multiplier = map(lightState->getAnimationSpeed(), 0, 255, -100, 100);
-  if (lightState->getLightBrightness() == 0) {
+  int32_t multiplier = map(lightController->getAnimationSpeed(), 0, 255, -100, 100);
+  if (lightController->getLightBrightness() == 0) {
     return -1;
   }
-  unsigned long refreshInterval = 1000000 / lightState->getLightBrightness(); // microseconds
+  unsigned long refreshInterval = 1000000 / lightController->getLightBrightness(); // microseconds
   if (multiplier < 0) {
     refreshInterval += refreshInterval * (-multiplier) / 5;
   } else if (multiplier > 0) {
@@ -81,5 +81,5 @@ unsigned long FadeCycle::getUpdateInterval() {
 }
   
 Effect FadeCycle::effect(const char* name) {
-  return {name, [] (LightController *lightState) -> BaseAnimation* { return new FadeCycle(lightState); }, 1};
+  return {name, [] (LightController *lightController) -> BaseAnimation* { return new FadeCycle(lightController); }, 1};
 }

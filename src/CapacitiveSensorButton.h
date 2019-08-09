@@ -4,6 +4,6 @@ class LightController;
 
 class AbstractCapacitiveSensorButton {
 public:
-  static AbstractCapacitiveSensorButton* create(LightController* lightState);
+  static AbstractCapacitiveSensorButton* create(LightController* lightController);
   virtual void loop();
 };

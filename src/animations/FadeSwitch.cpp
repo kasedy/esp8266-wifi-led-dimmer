@@ -4,8 +4,8 @@
 #include "helpers.h"
 #include "LightController.h"
 
-FadeSwitch::FadeSwitch(LightController *lightState) : 
-    BaseAnimation(lightState) {
+FadeSwitch::FadeSwitch(LightController *lightController) : 
+    BaseAnimation(lightController) {
   DBG("FadeSwitch constructed;\n");
 }
 
@@ -14,8 +14,8 @@ FadeSwitch::~FadeSwitch() {
 }
 
 void FadeSwitch::handle() {
-  if (lightState->isMaxBrightensChanged() 
-      || lightState->isEffectChanged()) {
+  if (lightController->isMaxBrightensChanged() 
+      || lightController->isEffectChanged()) {
     updateBrightness(getEndBrightness());
     return;
   }
@@ -30,19 +30,19 @@ void FadeSwitch::handle() {
 void FadeSwitch::updateBrightness(uint8_t newValue) {
     lastUpdateTime = micros();
     currentBrightness = newValue;
-    lightState->setAllPinValue(currentBrightness);
+    lightController->setAllPinValue(currentBrightness);
 }
 
 uint8_t FadeSwitch::getEndBrightness() const {
-  return lightState->isOn() ? lightState->getLightBrightness() : 0;
+  return lightController->isOn() ? lightController->getLightBrightness() : 0;
 }
 
 uint8_t FadeSwitch::getStartBrightness() const {
-  return lightState->isOn() ? 0 : lightState->getLightBrightness();
+  return lightController->isOn() ? 0 : lightController->getLightBrightness();
 }
 
 unsigned long FadeSwitch::getUpdateInterval() {
-  int32_t multiplier = map(lightState->getAnimationSpeed(), 0, 255, -50, 50);
+  int32_t multiplier = map(lightController->getAnimationSpeed(), 0, 255, -50, 50);
   uint8_t brightnessDifference = difference(getEndBrightness(), getStartBrightness());
   if (brightnessDifference == 0) {
     return -1;
@@ -57,5 +57,5 @@ unsigned long FadeSwitch::getUpdateInterval() {
 }
 
 Effect FadeSwitch::effect(const char* name) {
-  return {name, [] (LightController *lightState) -> BaseAnimation* { return new FadeSwitch(lightState); }, 1};
+  return {name, [] (LightController *lightController) -> BaseAnimation* { return new FadeSwitch(lightController); }, 1};
 }
