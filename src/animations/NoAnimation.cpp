@@ -1,10 +1,10 @@
 #include "animations/NoAnimation.h"
 
 #include "dbg.h"
-#include "LightState.h"
+#include "LightController.h"
 
-NoAnimation::NoAnimation(LightState *lightState) : 
-    BaseAnimation(lightState) {
+NoAnimation::NoAnimation(LightController *lightController) : 
+    BaseAnimation(lightController) {
   DBG("NoAnimation constructed!\n");
 }
 
@@ -13,15 +13,15 @@ NoAnimation::~NoAnimation() {
 }
 
 void NoAnimation::handle() {
-  if (lightState->isStateOnChanged() || lightState->isEffectChanged()) {
-    lightState->setPinValue(lightState->isOn() ? lightState->getMaxBrightness() : 0);
-  } else if (lightState->isMaxBrightensChanged()) {
-    if (lightState->isOn()) {
-      lightState->setPinValue(lightState->getMaxBrightness());
+  if (lightController->isStateOnChanged() || lightController->isEffectChanged()) {
+    lightController->setAllPinValue(lightController->isOn() ? lightController->getLightBrightness() : 0);
+  } else if (lightController->isMaxBrightensChanged()) {
+    if (lightController->isOn()) {
+      lightController->setAllPinValue(lightController->getLightBrightness());
     }
   }
 }
 
 Effect NoAnimation::effect(const char *name) {
-  return {name, [] (LightState *lightState) -> BaseAnimation* { return new NoAnimation(lightState); }, 1};
+  return {name, [] (LightController *lightController) -> BaseAnimation* { return new NoAnimation(lightController); }, 1};
 }

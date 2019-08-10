@@ -1,14 +1,14 @@
 #include "MqttProcessor.h"
 #include "config.h"
 #include "dbg.h"
-#include "LightState.h"
+#include "LightController.h"
 
 #include <ESP8266WiFi.h>
 #include <Ticker.h>
 #include <AsyncMqttClient.h>
 #include <ArduinoJson.h>
 
-extern LightState lightState;
+extern LightController *lightController;
 
 namespace MqttProcessor {
   AsyncMqttClient mqttClient;
@@ -16,16 +16,16 @@ namespace MqttProcessor {
 
   void connectToMqtt() {
     if (!WiFi.isConnected()) {
-      Serial.println("Trying to connect MQTT but WiFi is not connected!");
+      DBG("Trying to connect MQTT but WiFi is not connected!\n");
       mqttReconnectTimer.once(10, connectToMqtt);
     } else if (!mqttClient.connected()) {
-      Serial.println("Connecting to MQTT...");
+      DBG("Connecting to MQTT...\n");
       mqttClient.connect();
     }
   }
 
   void onMqttConnect(bool sessionPresent) {
-    Serial.printf("Connected to MQTT. Session present: %d\n", sessionPresent);
+    DBG("Connected to MQTT. Session present: %d\n", sessionPresent);
     mqttClient.subscribe(LED_CONFIG_MQTT_TOPIC_COMMAND, 1);
 
     DynamicJsonDocument doc(1024);
@@ -38,13 +38,13 @@ namespace MqttProcessor {
     doc["optimistic"] = false;
     doc["qos"] = 2;
     doc["retain"] = true;
-    doc["effect"] = lightState.getAvailableAnimationCount() > 0;
+    doc["effect"] = lightController->getAnimationCount() > 0;
     doc["white_value"] = true;
 
-    if (lightState.getAvailableAnimationCount() > 0) {
+    if (lightController->getAnimationCount() > 0) {
       JsonArray effectList = doc.createNestedArray("effect_list");
-      for (size_t i = 0; i < lightState.getAvailableAnimationCount(); ++i) {
-        effectList.add(lightState.getAnimationName(i));
+      for (size_t i = 0; i < lightController->getAnimationCount(); ++i) {
+        effectList.add(lightController->getAnimationName(i));
       }
     }
     
@@ -57,24 +57,24 @@ namespace MqttProcessor {
   }
 
   void onMqttDisconnect(AsyncMqttClientDisconnectReason reason) {
-    Serial.printf("Disconnected from MQTT. Rery in 10 sec. Error code %d\n", reason);
+    DBG("Disconnected from MQTT. Rery in 10 sec. Error code %d\n", reason);
     mqttReconnectTimer.once(10, connectToMqtt);
   }
 
   void broadcastStateViaMqtt() {
     if (!mqttClient.connected()) {
-      Serial.printf("Unable to publish the state to MQTT. Client is not connected.\n");
+      DBG("Unable to publish the state to MQTT. Client is not connected.\n");
       return;
     }
 
     StaticJsonDocument<JSON_OBJECT_SIZE(20)> doc;
 
-    doc["state"] = lightState.isOn() ? CONFIG_MQTT_PAYLOAD_ON : CONFIG_MQTT_PAYLOAD_OFF;
-    doc["brightness"] = lightState.getMaxBrightness();
-    if (lightState.hasCurrentEffect()) {
-      doc["effect"] = lightState.getCurrentEffectName();
+    doc["state"] = lightController->isOn() ? CONFIG_MQTT_PAYLOAD_ON : CONFIG_MQTT_PAYLOAD_OFF;
+    doc["brightness"] = lightController->getLightBrightness();
+    if (lightController->getCurrentAnimationIndex() != -1) {
+      doc["effect"] = lightController->getCurrentAnimationName();
     }
-    doc["white_value"] = lightState.getAnimationSpeed();
+    doc["white_value"] = lightController->getAnimationSpeed();
 
     size_t jsonSize = measureJson(doc);
     char buffer[jsonSize + 1];
@@ -82,7 +82,7 @@ namespace MqttProcessor {
 
     const char* topic = LED_CONFIG_MQTT_TOPIC_STATE;
     DBG("Publishing state to %s -> %s\n", topic, buffer);
-    mqttClient.publish(topic, 2, true, buffer, jsonSize);
+    mqttClient.publish(topic, 2, false, buffer, jsonSize);
   }
 
   void onMqttMessage(char* topic, char* payload, AsyncMqttClientMessageProperties properties, size_t length, size_t index, size_t total) {
@@ -106,27 +106,25 @@ namespace MqttProcessor {
       Serial.printf("State = %s\n", state);
       if (strcmp(doc["state"], CONFIG_MQTT_PAYLOAD_ON) == 0) {
         Serial.print("Switching ON\n");
-        lightState.setStateOn(true);
+        lightController->setStateOn(true);
       }
       else if (strcmp(doc["state"], CONFIG_MQTT_PAYLOAD_OFF) == 0) {
         Serial.print("Switching OFF\n");
-        lightState.setStateOn(false);
+        lightController->setStateOn(false);
       }
     }
 
     if (doc.containsKey("brightness")) {
-      lightState.setMaxBrightness(doc["brightness"]);
+      lightController->setLightBrightness(doc["brightness"]);
     }
 
     if (doc.containsKey("effect")) {
-      lightState.setEffect(doc["effect"]);
+      lightController->setAnimationByName(doc["effect"]);
     }
 
     if (doc.containsKey("white_value")) {
-      lightState.setAnimationSpeed(doc["white_value"]);
+      lightController->setAnimationSpeed(doc["white_value"]);
     }
-
-    broadcastStateViaMqtt();
   }
 
   void setup() {

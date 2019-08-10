@@ -1,7 +1,6 @@
 #include "CapacitiveSensorButton.h"
 #include "hardware.h"
-#include "LightState.h"
-#include "MqttProcessor.h"
+#include "LightController.h"
 #include "average.h"
 
 #include <CapacitiveSensor.h>
@@ -22,7 +21,7 @@ public:
 };
 
 class CapacitiveSensorButton : public AbstractCapacitiveSensorButton {
-  LightState* lightState;
+  LightController* lightController;
   CapacitiveSensor cs;
   AverageValueCalculator<uint32_t, uint32_t> touchSensorData;
   bool isPressed;
@@ -34,7 +33,7 @@ class CapacitiveSensorButton : public AbstractCapacitiveSensorButton {
   bool lightScrollDirectionUp;
 public:
   // sendPin is a pin with high resistor in front
-  CapacitiveSensorButton(uint8_t sendPin, uint8_t receivePin, LightState* lightState);
+  CapacitiveSensorButton(uint8_t sendPin, uint8_t receivePin, LightController* lightController);
   virtual void loop();
 
 private:
@@ -45,8 +44,8 @@ private:
 };
 
 
-CapacitiveSensorButton::CapacitiveSensorButton(uint8_t sendPin, uint8_t receivePin, LightState* lightState) : 
-    lightState(lightState),
+CapacitiveSensorButton::CapacitiveSensorButton(uint8_t sendPin, uint8_t receivePin, LightController* lightController) : 
+    lightController(lightController),
     cs(CapacitiveSensor(sendPin, receivePin)),
     isPressed(false),
     lastAverageCalculation(0),
@@ -77,9 +76,6 @@ void CapacitiveSensorButton::loop() {
     uint32_t averageSensorTime = touchSensorData.getAverage();
     Debug.println(averageSensorTime);
     if (isPressed && averageSensorTime < THRESHOLD) {
-      if (rapidClickCounter == 0) {
-        MqttProcessor::broadcastStateViaMqtt();
-      }
       isPressed = false;
       ++rapidClickCounter;
       lastUpTime = now;
@@ -114,23 +110,20 @@ void CapacitiveSensorButton::loop() {
 }
 
 void CapacitiveSensorButton::onClickHandler() {
-  lightState->toggleState();
-  MqttProcessor::broadcastStateViaMqtt();
+  lightController->toggleState();
 }
 
 void CapacitiveSensorButton::onDoubleClickHandler() {
-  lightState->setStateOn(true);
-  if (lightState->nextAnimation()) {
-    MqttProcessor::broadcastStateViaMqtt();
-  }
+  lightController->setStateOn(true);
+  lightController->nextAnimation();
 }
 
 void CapacitiveSensorButton::onLongPressHandler(bool isFirst) {
   uint8_t now = (uint8_t) millis();
   if (isFirst) {
-    if (!lightState->isOn()) {
-      lightState->setMaxBrightness(0);
-      lightState->setStateOn(true);
+    if (!lightController->isOn()) {
+      lightController->setLightBrightness(0);
+      lightController->setStateOn(true);
       lightScrollDirectionUp = true;
     } else {
       lightScrollDirectionUp = !lightScrollDirectionUp;
@@ -139,7 +132,7 @@ void CapacitiveSensorButton::onLongPressHandler(bool isFirst) {
     return;
   }
   lastChangeBrightness = now;
-  uint8_t brightness = lightState->getMaxBrightness();
+  uint8_t brightness = lightController->getLightBrightness();
   uint8_t step = 2; 
   if (brightness < 30) {
     step = 1;
@@ -153,7 +146,7 @@ void CapacitiveSensorButton::onLongPressHandler(bool isFirst) {
   } else if (brightness < step) {
     lightScrollDirectionUp = true;
   }
-  lightState->setMaxBrightness(brightness + (lightScrollDirectionUp ? step : -step));
+  lightController->setLightBrightness(brightness + (lightScrollDirectionUp ? step : -step));
 }
 
 void CapacitiveSensorButton::onMultipleClicksHandler() {
@@ -162,9 +155,9 @@ void CapacitiveSensorButton::onMultipleClicksHandler() {
   ESP.reset();
 }
 
-AbstractCapacitiveSensorButton* AbstractCapacitiveSensorButton::create(LightState* lightState) {
+AbstractCapacitiveSensorButton* AbstractCapacitiveSensorButton::create(LightController* lightController) {
 #if defined(CAPACITIVE_SENSOR_SEND_PIN) && defined(CAPACITIVE_SENSOR_RECEIVE_PIN)
-  return new CapacitiveSensorButton(CAPACITIVE_SENSOR_SEND_PIN, CAPACITIVE_SENSOR_RECEIVE_PIN, lightState);
+  return new CapacitiveSensorButton(CAPACITIVE_SENSOR_SEND_PIN, CAPACITIVE_SENSOR_RECEIVE_PIN, lightController);
 #else
   return new DummyCapacitiveSensorButton();
 #endif

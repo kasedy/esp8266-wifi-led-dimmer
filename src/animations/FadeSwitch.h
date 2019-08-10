@@ -16,7 +16,7 @@ class FadeSwitch : public BaseAnimation {
   uint8_t getEndBrightness() const;
   uint8_t getStartBrightness() const;
 public:
-  FadeSwitch(LightState *lightState);
+  FadeSwitch(LightController *lightController);
   virtual ~FadeSwitch();
   virtual void handle() override;
 

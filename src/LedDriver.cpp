@@ -2,10 +2,11 @@
 
 #include <Arduino.h>
 
-LedDriver::LedDriver(uint8_t pin) : pin(pin), initialState(LOW), cycle(true) {
+LedDriver::LedDriver(uint8_t pin, bool state) 
+      : pin(pin), initialState(state), cycle(true) {
   if (pin != -1) {
     pinMode(pin, OUTPUT);
-    init();
+    updateLed();
   }
 }
 
@@ -16,10 +17,10 @@ void LedDriver::setPattern(std::vector<uint32_t> newPattern, bool newInitialStat
   patternMs = newPattern;
   initialState = newInitialState;
   cycle = newCycle;
-  init();
+  updateLed();
 }
 
-void LedDriver::init() {
+void LedDriver::updateLed() {
   currentIndex = 0;
   digitalWrite(pin, initialState);
   if (!patternMs.empty()) {

@@ -15,8 +15,8 @@
   #define DEVICE_NAME "Testing and Development"
   #define LED_PINS {3, 12, 13, 14, 16}
   #define LOGGING true
-//  #define CAPACITIVE_SENSOR_SEND_PIN 5
-//  #define CAPACITIVE_SENSOR_RECEIVE_PIN 4
+ #define CAPACITIVE_SENSOR_SEND_PIN 5
+ #define CAPACITIVE_SENSOR_RECEIVE_PIN 4
 #elif defined(HARDWARE_KITCHEN_LIGHT)
   #define DEVICE_TYPE "kitchen_light"
   #define DEVICE_NAME "Kitchen Light"
@@ -27,6 +27,7 @@
   #define LED_PINS {0}  
 #endif
 
+#define LEAD_INDICATOR_PIN 2
 
 #define MQTT_SERVER "raspberrypi.local"
 #define MQTT_PORT 1883
