@@ -61,7 +61,7 @@ CapacitiveSensorButton::CapacitiveSensorButton(uint8_t sendPin, uint8_t receiveP
 void CapacitiveSensorButton::loop() {
   long sensorTime = cs.capacitiveSensor(NUM_SAMPLES);
   if (sensorTime < 0) {
-    DBG("Failed to read capacitive sensor. Error code = %ld\n", sensorTime);
+    // DBG("Failed to read capacitive sensor. Error code = %ld\n", sensorTime);
     return;
   }
   touchSensorData.addMeasurement(sensorTime);
@@ -69,7 +69,7 @@ void CapacitiveSensorButton::loop() {
   uint32_t now = millis();
   if (now - lastAverageCalculation >= PROCESSING_INTERVAL) {
     if (touchSensorData.getCounter() == 0) {
-      DBG("Failed to get average for capacitive sensor charge time\n");
+      // DBG("Failed to get average for capacitive sensor charge time\n");
       return;
     }
 
