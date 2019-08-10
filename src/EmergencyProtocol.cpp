@@ -25,6 +25,7 @@ namespace EmergencyProtocol {
   }
   
   void checkOnActivation() {
+    pinMode(LEAD_INDICATOR_PIN, OUTPUT);
     digitalWrite(LEAD_INDICATOR_PIN, HIGH);
     uint8_t numResets = ResetDetector::execute(ALLOWED_TIME_INTERVAL_BETWEEN_RESETS);
     DBG("Starting with %d reset(s)\n", numResets);

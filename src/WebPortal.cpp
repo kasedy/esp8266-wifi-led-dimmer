@@ -8,8 +8,11 @@
 
 extern LightController *lightController;
 
-const char *WEBPAGE PROGMEM = "<!DOCTYPE html><html lang=en><head><meta charset=UTF-8 name=viewport content=\"width=device-width, initial-scale=1, user-scalable=no\"/><title>WebSocket demo</title> <style>body{text-align:center;font-family:verdana;user-select:none}input,select{outline:0;font-size:1em;padding:8px;width:100%;box-sizing:border-box}select{margin-top:10px}form>*{display:block;margin-bottom:15px}.c{text-align:center}input[type=\'checkbox\']{zoom:1.8;width:auto;margin:10px;vertical-align:middle}</style></head><body><div style=text-align:left;display:inline-block;min-width:340px><h1 class=c>Countreau Bottle</h1><form id=main_form> <label class=c>Enable<input type=checkbox name=state></label><div>Brightness<input name=brightness type=range min=1 max=255 value=128></div><div>Speed<input name=speed type=range min=1 max=255 value=128></div><div>Effect <select name=effect>{effects}</select></div></form></div> <script>function p(el){return el.type==\'checkbox\'?\'checked\':\'value\';};var ws=new WebSocket(\"ws://\"+location.host+\"/ws\"),form=document.forms[0];form.onchange=()=>{ws.send(JSON.stringify([].reduce.call(form,(data,el)=>{data[el.name]=el[p(el)];return data;},{})));};ws.onmessage=(event)=>{var jsondata=JSON.parse(event.data);[].forEach.call(form,(el)=>{if(jsondata.hasOwnProperty(el.name)){el[p(el)]=jsondata[el.name];}});}</script></body></html>";
-const char *EFFECT_OPTION PROGMEM = "<option value={index}>{name}</option>";
+const char *WEBPAGE PROGMEM = "<!DOCTYPE html><html lang=en><head><meta charset=UTF-8 name=viewport content=\"width=device-width, initial-scale=1, user-scalable=no\"/><title>Control Light</title> <style>body{text-align:center;font-family:verdana;user-select:none}input,select{outline:0;font-size:1em;padding:8px;width:100%;box-sizing:border-box}select{margin-top:10px}form>*{display:block;margin-bottom:15px}form{text-align:left;width:80%;display:inline-block;}.c{text-align:center}input[type=\'checkbox\']{zoom:1.8;width:auto;margin:10px;vertical-align:middle}</style></head><body><div style=display:inline-block;min-width:340px><h1 class=c>Countreau Bottle</h1><form><label class=c>Enable<input type=checkbox name=state></label><div>Brightness<input name=brightness type=range min=1 max=255 value=128></div><div>Speed<input name=speed type=range min=1 max=255 value=128></div><div>Effect <select name=effect>{effects}</select></div></form></div> <script>function p(el){return el.type==\'checkbox\'?\'checked\':\'value\';};var ws=new WebSocket(\"ws://\"+location.host+\"/ws\"),form=document.forms[0];form.onchange=()=>{ws.send(JSON.stringify([].reduce.call(form,(data,el)=>{data[el.name]=el[p(el)];return data;},{})));};ws.onmessage=(event)=>{var jsondata=JSON.parse(event.data);[].forEach.call(form,(el)=>{if(jsondata.hasOwnProperty(el.name)){el[p(el)]=jsondata[el.name];}});}</script></body></html>";
+const char *STATE_PARAM PROGMEM = "state";
+const char *BRIGHTNESS_PARAM PROGMEM = "brightness";
+const char *SPEED_PARAM PROGMEM = "speed";
+const char *EFFECT_PARAM PROGMEM = "effect";
 
 namespace WebPortal {
   AsyncWebServer *server;
@@ -17,10 +20,10 @@ namespace WebPortal {
 
   AsyncWebSocketMessageBuffer *getLightStateJson() {
     StaticJsonDocument<528> jsonBuffer;
-    jsonBuffer["state"] = lightController->isOn();
-    jsonBuffer["brightness"] = lightController->getLightBrightness();
-    jsonBuffer["speed"] = lightController->getAnimationSpeed();
-    jsonBuffer["effect"] = lightController->getCurrentAnimationIndex();
+    jsonBuffer[FPSTR(STATE_PARAM)] = lightController->isOn();
+    jsonBuffer[FPSTR(BRIGHTNESS_PARAM)] = lightController->getLightBrightness();
+    jsonBuffer[FPSTR(SPEED_PARAM)] = lightController->getAnimationSpeed();
+    jsonBuffer[FPSTR(EFFECT_PARAM)] = lightController->getCurrentAnimationIndex();
     size_t len = measureJson(jsonBuffer); // len without null terminating char
     AsyncWebSocketMessageBuffer *websocketBuffer = ws->makeBuffer(len); //  creates a buffer (len + 1) for you.
     if (websocketBuffer) {
@@ -42,10 +45,10 @@ namespace WebPortal {
         memcpy(buffer, data, len);
         DeserializationError error = deserializeJson(jsonBuffer, buffer);
         if (!error) {
-          bool state = jsonBuffer[F("state")];
-          int brightness = jsonBuffer[F("brightness")];
-          int speed = jsonBuffer[F("speed")];
-          int effectIndex = jsonBuffer[F("effect")];
+          bool state = jsonBuffer[FPSTR(STATE_PARAM)];
+          int brightness = jsonBuffer[FPSTR(BRIGHTNESS_PARAM)];
+          int speed = jsonBuffer[FPSTR(SPEED_PARAM)];
+          int effectIndex = jsonBuffer[FPSTR(EFFECT_PARAM)];
           lightController->setStateOn(state);
           lightController->setLightBrightness(brightness);
           lightController->setAnimationSpeed(speed);
@@ -58,21 +61,19 @@ namespace WebPortal {
 
   void setup() {
     server = new AsyncWebServer(80);
-    ws = new AsyncWebSocket("/ws");
+    ws = new AsyncWebSocket(F("/ws"));
     server->on("/heap", HTTP_GET, [](AsyncWebServerRequest *request){
-      request->send(200, "text/plain", String(ESP.getFreeHeap()));
+      request->send(200, F("text/plain"), String(ESP.getFreeHeap()));
     });
     server->on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
       String effects;
       for (size_t index = 0; index < lightController->getAnimationCount(); ++index) {
-        String effect(FPSTR(EFFECT_OPTION));
-        effect.replace("{index}", String(index));
-        effect.replace("{name}", lightController->getAnimationName(index));
-        effects += effect;
+        const char *animationName = lightController->getAnimationName(index);
+        effects += String(F("<option value=")) + String(index) + '>' + animationName + F("</option>");
       }
       String html(FPSTR(WEBPAGE));
-      html.replace("{effects}", effects);
-      request->send(200, "text/html", html);
+      html.replace(F("{effects}"), effects);
+      request->send(200, F("text/html"), html);
     });
     server->onNotFound([](AsyncWebServerRequest *request){
       request->redirect("/");
