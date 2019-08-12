@@ -29,20 +29,20 @@ namespace MqttProcessor {
     mqttClient.subscribe(LED_CONFIG_MQTT_TOPIC_COMMAND, 1);
 
     DynamicJsonDocument doc(1024);
-    doc["schema"] = "json";
-    doc["unique_id"] = HOSTNAME;
-    doc["name"] = DEVICE_FULL_NAME;
-    doc["state_topic"] = LED_CONFIG_MQTT_TOPIC_STATE;
-    doc["command_topic"] = LED_CONFIG_MQTT_TOPIC_COMMAND;
-    doc["brightness"] = true;
-    doc["optimistic"] = false;
-    doc["qos"] = 2;
-    doc["retain"] = true;
-    doc["effect"] = lightController->getAnimationCount() > 0;
-    doc["white_value"] = true;
+    doc[F("schema")] = F("json");
+    doc[F("unique_id")] = HOSTNAME;
+    doc[F("name")] = DEVICE_FULL_NAME;
+    doc[F("state_topic")] = LED_CONFIG_MQTT_TOPIC_STATE;
+    doc[F("command_topic")] = LED_CONFIG_MQTT_TOPIC_COMMAND;
+    doc[F("brightness")] = true;
+    doc[F("optimistic")] = false;
+    doc[F("qos")] = 2;
+    doc[F("retain")] = true;
+    doc[F("effect")] = lightController->getAnimationCount() > 0;
+    doc[F("white_value")] = true;
 
     if (lightController->getAnimationCount() > 0) {
-      JsonArray effectList = doc.createNestedArray("effect_list");
+      JsonArray effectList = doc.createNestedArray(F("effect_list"));
       for (size_t i = 0; i < lightController->getAnimationCount(); ++i) {
         effectList.add(lightController->getAnimationName(i));
       }
@@ -69,12 +69,12 @@ namespace MqttProcessor {
 
     StaticJsonDocument<JSON_OBJECT_SIZE(20)> doc;
 
-    doc["state"] = lightController->isOn() ? CONFIG_MQTT_PAYLOAD_ON : CONFIG_MQTT_PAYLOAD_OFF;
-    doc["brightness"] = lightController->getLightBrightness();
+    doc[F("state")] = lightController->isOn() ? CONFIG_MQTT_PAYLOAD_ON : CONFIG_MQTT_PAYLOAD_OFF;
+    doc[F("brightness")] = lightController->getLightBrightness();
     if (lightController->getCurrentAnimationIndex() != -1) {
-      doc["effect"] = lightController->getCurrentAnimationName();
+      doc[F("effect")] = lightController->getCurrentAnimationName();
     }
-    doc["white_value"] = lightController->getAnimationSpeed();
+    doc[F("white_value")] = lightController->getAnimationSpeed();
 
     size_t jsonSize = measureJson(doc);
     char buffer[jsonSize + 1];
@@ -101,29 +101,29 @@ namespace MqttProcessor {
       return;
     }
 
-    if (doc.containsKey("state")) {
-      const char *state = doc["state"];
-      Serial.printf("State = %s\n", state);
-      if (strcmp(doc["state"], CONFIG_MQTT_PAYLOAD_ON) == 0) {
-        Serial.print("Switching ON\n");
+    if (doc.containsKey(F("state"))) {
+      const char *state = doc[F("state")];
+      DBG("State = %s\n", state);
+      if (strcmp(doc[F("state")], CONFIG_MQTT_PAYLOAD_ON) == 0) {
+        DBG("Switching ON\n");
         lightController->setStateOn(true);
       }
-      else if (strcmp(doc["state"], CONFIG_MQTT_PAYLOAD_OFF) == 0) {
-        Serial.print("Switching OFF\n");
+      else if (strcmp(doc[F("state")], CONFIG_MQTT_PAYLOAD_OFF) == 0) {
+        DBG("Switching OFF\n");
         lightController->setStateOn(false);
       }
     }
 
-    if (doc.containsKey("brightness")) {
-      lightController->setLightBrightness(doc["brightness"]);
+    if (doc.containsKey(F("brightness)"))) {
+      lightController->setLightBrightness(doc[F("brightness")]);
     }
 
-    if (doc.containsKey("effect")) {
-      lightController->setAnimationByName(doc["effect"]);
+    if (doc.containsKey(F("effect"))) {
+      lightController->setAnimationByName(doc[F("effect")]);
     }
 
-    if (doc.containsKey("white_value")) {
-      lightController->setAnimationSpeed(doc["white_value"]);
+    if (doc.containsKey(F("white_value"))) {
+      lightController->setAnimationSpeed(doc[F("white_value")]);
     }
   }
 

@@ -8,6 +8,7 @@
 #include "ota.h"
 #include "WebPortal.h"
 #include "EmergencyProtocol.h"
+#include "VoiceControl.h"
 
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
@@ -45,6 +46,7 @@ void setup() {
   EmergencyProtocol::checkOnActivation();
   lightController = new LightController(LED_PINS, defaultEffects());
   sensorButton = AbstractCapacitiveSensorButton::create(lightController);
+  VoiceControl::setup();
   setupWifi();
   Ota::setup();
   randomSeed(ESP.getCycleCount());
@@ -53,8 +55,10 @@ void setup() {
   WebPortal::setup();
 }
 
+unsigned long lastStatusCheck = 0;
+
 void loop() {
-  // Stage 0: all what is not related to Light
+    // Stage 0: all what is not related to Light
   Ota::loop();
   Debug.handle();
   // Stage 1: read all possible sources that could change Ligst state
@@ -66,4 +70,10 @@ void loop() {
   }
   // Stage 3: play light animation and clear change flags
   lightController->loop();
+
+  if (millis() - lastStatusCheck > 3000) {
+    // DBG("Free heap: %d\n", ESP.getFreeHeap());
+    // DBG("Heap fragmentation: %d%%\n", ESP.getHeapFragmentation());
+    lastStatusCheck = millis();
+  }
 }

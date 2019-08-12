@@ -25,6 +25,7 @@ class CapacitiveSensorButton : public AbstractCapacitiveSensorButton {
   CapacitiveSensor cs;
   AverageValueCalculator<uint32_t, uint32_t> touchSensorData;
   bool isPressed;
+  bool startHandlingLongPress;
   uint32_t lastAverageCalculation;
   uint32_t lastDownTime;
   uint32_t lastUpTime;
@@ -48,6 +49,7 @@ CapacitiveSensorButton::CapacitiveSensorButton(uint8_t sendPin, uint8_t receiveP
     lightController(lightController),
     cs(CapacitiveSensor(sendPin, receivePin)),
     isPressed(false),
+    startHandlingLongPress(false),
     lastAverageCalculation(0),
     lastDownTime(0),
     lastUpTime(0),
@@ -77,11 +79,17 @@ void CapacitiveSensorButton::loop() {
     Debug.println(averageSensorTime);
     if (isPressed && averageSensorTime < THRESHOLD) {
       isPressed = false;
-      ++rapidClickCounter;
+      startHandlingLongPress = false;
+      if (now - lastDownTime > CLICK_TIME_THRESHOLD) {
+        rapidClickCounter = 0;
+      } else {
+        ++rapidClickCounter;
+      }
       lastUpTime = now;
       DBG("Touch up %d\n", rapidClickCounter);
     } else if (!isPressed && averageSensorTime > THRESHOLD) {
       isPressed = true;
+      startHandlingLongPress = true;
       lastDownTime = now;
       DBG("Touch down\n");
     }
@@ -90,22 +98,22 @@ void CapacitiveSensorButton::loop() {
     lastAverageCalculation = now;
   }
 
-  if (now - lastUpTime > DOUBLE_CLICK_TIME_THRESHOLD) {
-    if (rapidClickCounter == 2) {
+  if (!isPressed && now - lastUpTime > DOUBLE_CLICK_TIME_THRESHOLD) {
+    if (rapidClickCounter == 1) {
       onClickHandler();
-    } else if (rapidClickCounter == 3) {
+    } else if (rapidClickCounter == 2) {
       onDoubleClickHandler();
-    } else if (rapidClickCounter >= 21) {
+    } else if (rapidClickCounter >= 20) {
       onMultipleClicksHandler();
     } 
-    if (rapidClickCounter != 0) {
-      rapidClickCounter = 1;
-    }
+    rapidClickCounter = 0;
   }
 
   if (isPressed && now - lastDownTime > CLICK_TIME_THRESHOLD) {
-    onLongPressHandler(rapidClickCounter != 0);
-    rapidClickCounter = 0; // ignore next click-up
+    DBG("Long press %d\n", rapidClickCounter);
+    onLongPressHandler(startHandlingLongPress);
+    // TODO: add double long press handler that will adjust animation speed
+    startHandlingLongPress = false;
   }
 }
 
