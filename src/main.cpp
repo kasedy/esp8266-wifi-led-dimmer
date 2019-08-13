@@ -2,32 +2,19 @@
 #include "helpers.h"
 #include "effects.h"
 #include "LedDriver.h"
-#include "average.h"
 #include "MqttProcessor.h"
 #include "ota.h"
-#include "WebPortal.h"
 #include "VoiceControl.h"
 
-#include <ESP8266WiFi.h>
-#include <ESP8266mDNS.h>
-#include <ArduinoOTA.h>
-#include <ESPAsyncWiFiManager.h>
+#include <WiFiManager.h>
 #include <Hash.h>
-#include <RemoteDebug.h>
-#include <ESPAsyncWebServer.h>
 
 LightController *lightController;
 
 void setupWifi() {
   LedDriver blueLed(LEAD_INDICATOR_PIN, HIGH);
   blueLed.blink(500);
-  AsyncWebServer webServer(80);
-  DNSServer dns;
-  AsyncWiFiManager wifiManager(&webServer, &dns);
-  wifiManager.setMinimumSignalQuality(60);
-  wifiManager.setLoopExtraRoutine([] () {
-    lightController->loop();
-  });
+  WiFiManager wifiManager;
   wifiManager.autoConnect(HOSTNAME);
   blueLed.setHigh();
 }
@@ -43,7 +30,6 @@ void setup() {
   Ota::setup();
   randomSeed(ESP.getCycleCount());
   MqttProcessor::setup();
-  WebPortal::setup();
 }
 
 void loop() {
@@ -53,7 +39,6 @@ void loop() {
 
   // Stage 2: notify all sources about Light changes
   if (lightController->isChanged()) {
-    WebPortal::broadcaseLightChanges();
     MqttProcessor::broadcastStateViaMqtt();
   }
   // Stage 3: play light animation and clear change flags
