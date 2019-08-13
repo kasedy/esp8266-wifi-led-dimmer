@@ -46,8 +46,6 @@ void setup() {
   WebPortal::setup();
 }
 
-unsigned long lastStatusCheck = 0;
-
 void loop() {
   // Stage 0: all what is not related to Light
   Ota::loop();
@@ -60,10 +58,4 @@ void loop() {
   }
   // Stage 3: play light animation and clear change flags
   lightController->loop();
-
-  if (millis() - lastStatusCheck > 3000) {
-    // DBG("Free heap: %d\n", ESP.getFreeHeap());
-    // DBG("Heap fragmentation: %d%%\n", ESP.getHeapFragmentation());
-    lastStatusCheck = millis();
-  }
 }
