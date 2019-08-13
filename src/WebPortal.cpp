@@ -6,6 +6,8 @@
 #include <ESPAsyncWebServer.h>
 #include <ArduinoJson.h>
 
+#ifndef NO_WEB_PORTAL
+
 extern LightController *lightController;
 
 const char *WEBPAGE PROGMEM = "<!DOCTYPE html><html lang=en><head><meta charset=UTF-8 name=viewport content=\"width=device-width, initial-scale=1, user-scalable=no\"/><title>Control Light</title> <style>body{text-align:center;font-family:verdana;user-select:none}input,select{outline:0;font-size:1em;padding:8px;width:100%;box-sizing:border-box}select{margin-top:10px}form>*{display:block;margin-bottom:15px}form{text-align:left;width:80%;display:inline-block;}.c{text-align:center}input[type=\'checkbox\']{zoom:1.8;width:auto;margin:10px;vertical-align:middle}</style></head><body><div style=display:inline-block;min-width:340px><h1 class=c>Countreau Bottle</h1><form><label class=c>Enable<input type=checkbox name=state></label><div>Brightness<input name=brightness type=range min=1 max=255 value=128></div><div>Speed<input name=speed type=range min=1 max=255 value=128></div><div>Effect <select name=effect>{effects}</select></div></form></div> <script>function p(el){return el.type==\'checkbox\'?\'checked\':\'value\';};var ws=new WebSocket(\"ws://\"+location.host+\"/ws\"),form=document.forms[0];form.onchange=()=>{ws.send(JSON.stringify([].reduce.call(form,(data,el)=>{data[el.name]=el[p(el)];return data;},{})));};ws.onmessage=(event)=>{var jsondata=JSON.parse(event.data);[].forEach.call(form,(el)=>{if(jsondata.hasOwnProperty(el.name)){el[p(el)]=jsondata[el.name];}});}</script></body></html>";
@@ -87,3 +89,12 @@ namespace WebPortal {
     ws->textAll(getLightStateJson());
   }
 }
+
+#else
+
+namespace WebPortal {
+  void setup() {}
+  void broadcaseLightChanges() {}
+};
+
+#endif

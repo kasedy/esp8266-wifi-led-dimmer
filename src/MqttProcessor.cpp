@@ -104,11 +104,11 @@ namespace MqttProcessor {
     if (doc.containsKey(F("state"))) {
       const char *state = doc[F("state")];
       DBG("State = %s\n", state);
-      if (strcmp(doc[F("state")], CONFIG_MQTT_PAYLOAD_ON) == 0) {
+      if (strcmp(state, CONFIG_MQTT_PAYLOAD_ON) == 0) {
         DBG("Switching ON\n");
         lightController->setStateOn(true);
       }
-      else if (strcmp(doc[F("state")], CONFIG_MQTT_PAYLOAD_OFF) == 0) {
+      else if (strcmp(state, CONFIG_MQTT_PAYLOAD_OFF) == 0) {
         DBG("Switching OFF\n");
         lightController->setStateOn(false);
       }

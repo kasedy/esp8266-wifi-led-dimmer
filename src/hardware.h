@@ -21,6 +21,7 @@
   #define DEVICE_TYPE "kitchen_light"
   #define DEVICE_NAME "Kitchen Light"
   #define LED_PINS {{0, 2}}
+  #define NO_WEB_PORTAL
 #elif defined(HARDWARE_HANGING_BULBS)
   #define DEVICE_TYPE "hanging_bulbs"
   #define DEVICE_NAME "Hanging bulbs"
