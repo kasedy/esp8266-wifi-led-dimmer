@@ -7,13 +7,11 @@
 #include "MqttProcessor.h"
 #include "ota.h"
 #include "WebPortal.h"
-#include "EmergencyProtocol.h"
 #include "VoiceControl.h"
 
 #include <ESP8266WiFi.h>
 #include <ESP8266mDNS.h>
 #include <ArduinoOTA.h>
-#include <ResetDetector.h>
 #include <ESPAsyncWiFiManager.h>
 #include <Hash.h>
 #include <RemoteDebug.h>
@@ -43,7 +41,6 @@ void setup() {
   Serial.begin(74880, SERIAL_8N1, SERIAL_TX_ONLY);
   Serial.setDebugOutput(true);
 #endif 
-  EmergencyProtocol::checkOnActivation();
   lightController = new LightController(LED_PINS, defaultEffects());
   sensorButton = AbstractCapacitiveSensorButton::create(lightController);
   VoiceControl::setup();
