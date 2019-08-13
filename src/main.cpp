@@ -3,7 +3,6 @@
 #include "effects.h"
 #include "LedDriver.h"
 #include "average.h"
-#include "CapacitiveSensorButton.h"
 #include "MqttProcessor.h"
 #include "ota.h"
 #include "WebPortal.h"
@@ -18,8 +17,6 @@
 #include <ESPAsyncWebServer.h>
 
 LightController *lightController;
-AbstractCapacitiveSensorButton* sensorButton;
-RemoteDebug Debug;
 
 void setupWifi() {
   LedDriver blueLed(LEAD_INDICATOR_PIN, HIGH);
@@ -29,7 +26,6 @@ void setupWifi() {
   AsyncWiFiManager wifiManager(&webServer, &dns);
   wifiManager.setMinimumSignalQuality(60);
   wifiManager.setLoopExtraRoutine([] () {
-    sensorButton->loop();
     lightController->loop();
   });
   wifiManager.autoConnect(HOSTNAME);
@@ -42,24 +38,21 @@ void setup() {
   Serial.setDebugOutput(true);
 #endif 
   lightController = new LightController(LED_PINS, defaultEffects());
-  sensorButton = AbstractCapacitiveSensorButton::create(lightController);
   VoiceControl::setup();
   setupWifi();
   Ota::setup();
   randomSeed(ESP.getCycleCount());
   MqttProcessor::setup();
-  Debug.begin(HOSTNAME);
   WebPortal::setup();
 }
 
 unsigned long lastStatusCheck = 0;
 
 void loop() {
-    // Stage 0: all what is not related to Light
+  // Stage 0: all what is not related to Light
   Ota::loop();
-  Debug.handle();
   // Stage 1: read all possible sources that could change Ligst state
-  sensorButton->loop();
+
   // Stage 2: notify all sources about Light changes
   if (lightController->isChanged()) {
     WebPortal::broadcaseLightChanges();
