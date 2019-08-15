@@ -114,7 +114,7 @@ namespace MqttProcessor {
       }
     }
 
-    if (doc.containsKey(F("brightness)"))) {
+    if (doc.containsKey(F("brightness"))) {
       lightController->setLightBrightness(doc[F("brightness")]);
     }
 
